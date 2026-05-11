@@ -1,0 +1,54 @@
+:root {
+  /* Brand Colors - CMP */
+  --brand-primary: #1B2A4A; /* Navy blue */
+  --brand-primary-light: #2D4A7A;
+  --brand-accent: #4A90D9; /* Action blue */
+  --brand-accent-hover: #3A7BC8;
+  
+  /* Backgrounds */
+  --surface-light: #F8F9FA;
+  --surface-card: #FFFFFF;
+  --surface-hover: #F1F5F9;
+  
+  /* Status Colors */
+  --status-open: #6B7280;
+  --status-progress: #3B82F6;
+  --status-review: #F5A623; /* Yellow from CMP logo */
+  --status-closed: #10B981;
+  --status-critical: #EF4444;
+  
+  /* Text Colors */
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --text-light: #FFFFFF;
+  
+  /* Borders */
+  --border-light: #E2E8F0;
+  
+  /* Design System */
+  --font-family: 'Inter', sans-serif;
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+  --brand-primary: #0F172A;
+  --brand-primary-light: #1E293B;
+  --brand-accent: #3B82F6;
+  --brand-accent-hover: #60A5FA;
+  
+  --surface-light: #0B1120;
+  --surface-card: #1E293B;
+  --surface-hover: #334155;
+  
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  
+  --border-light: #334155;
+  
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
