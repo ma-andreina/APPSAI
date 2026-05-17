@@ -195,3 +195,52 @@ export const mockPACs = [
     createdAt: '2026-05-21'
   }
 ];
+
+export const mockSystemConfig = {
+  institutional: {
+    institutionName: 'Contraloría del Municipio Pedraza',
+    address: 'Av. Bolívar, Edificio Contraloría, Ciudad Bolivia, Estado Barinas',
+    phone: '+58 273-8811234',
+    email: 'contraloria@cmp.gob.ve',
+    rif: 'G-20001234-5',
+    fiscalYear: 2026,
+    maxAuthority: 'Carlos Mendoza',
+    maxAuthorityRole: 'Contralor Municipal'
+  },
+  audit: {
+    defaultPACDeadlineDays: 30,
+    reportSignatureDeadlineDays: 15,
+    alertAdvanceDays: 5,
+    requireDigitalSignature: true,
+    isoScales: [
+      { key: 'Cumple', label: 'Cumple', color: '#10B981' },
+      { key: 'Parcial', label: 'Cumple Parcialmente', color: '#F5A623' },
+      { key: 'No Cumple', label: 'No Cumple', color: '#EF4444' }
+    ],
+    checklistCategories: ['Organizacionales', 'Personas', 'Físicos', 'Tecnológicos']
+  },
+  appearance: {
+    theme: 'light',
+    timezone: 'America/Caracas',
+    dateFormat: 'DD/MM/YYYY',
+    language: 'es'
+  }
+};
+
+export const mockAuditLogs = [
+  { id: 'LOG-001', timestamp: '2026-05-17T08:30:00', userId: '1', userName: 'Carlos Mendoza', action: 'LOGIN', module: 'Autenticación', detail: 'Inicio de sesión exitoso', ip: '192.168.1.10' },
+  { id: 'LOG-002', timestamp: '2026-05-17T09:15:00', userId: '5', userName: 'José Pérez', action: 'CREATE', module: 'Hallazgos', detail: 'Creación de hallazgo HALL-001 vinculado a AUD-2026-001', ip: '192.168.1.25' },
+  { id: 'LOG-003', timestamp: '2026-05-17T09:45:00', userId: '4', userName: 'María Gonzalez', action: 'UPDATE', module: 'Checklist ISO', detail: 'Actualización del control 5.1 — Estado cambiado a Cumple', ip: '192.168.1.30' },
+  { id: 'LOG-004', timestamp: '2026-05-17T10:00:00', userId: '2', userName: 'Ana Silva', action: 'SIGN', module: 'Informes', detail: 'Firma digital del Informe Definitivo REP-001', ip: '192.168.1.15' },
+  { id: 'LOG-005', timestamp: '2026-05-17T10:30:00', userId: '3', userName: 'Luis Ramos', action: 'CREATE', module: 'Planificación', detail: 'Nueva auditoría AUD-2026-003 registrada', ip: '192.168.1.20' },
+  { id: 'LOG-006', timestamp: '2026-05-16T14:20:00', userId: '5', userName: 'José Pérez', action: 'UPLOAD', module: 'Evidencias', detail: 'Carga de archivo scan_antivirus.pdf — SHA256: a3f2...c891', ip: '192.168.1.25' },
+  { id: 'LOG-007', timestamp: '2026-05-16T15:00:00', userId: '1', userName: 'Carlos Mendoza', action: 'EXPORT', module: 'Informes', detail: 'Exportación PDF del Informe Ejecutivo REP-001', ip: '192.168.1.10' },
+  { id: 'LOG-008', timestamp: '2026-05-16T16:10:00', userId: '2', userName: 'Ana Silva', action: 'UPDATE', module: 'Usuarios', detail: 'Cambio de rol de María Gonzalez a Coordinador de Auditoría', ip: '192.168.1.15' },
+  { id: 'LOG-009', timestamp: '2026-05-15T09:00:00', userId: '6', userName: 'Laura Gómez', action: 'REVIEW', module: 'Hallazgos', detail: 'Revisión legal del hallazgo HALL-001 — Validado con eficacia probatoria', ip: '192.168.1.35' },
+  { id: 'LOG-010', timestamp: '2026-05-15T11:30:00', userId: '7', userName: 'Pedro Díaz', action: 'CREATE', module: 'Responsabilidades', detail: 'Inicio de procedimiento administrativo vinculado a HALL-001', ip: '192.168.1.40' },
+  { id: 'LOG-011', timestamp: '2026-05-14T08:00:00', userId: '5', userName: 'José Pérez', action: 'LOGIN', module: 'Autenticación', detail: 'Inicio de sesión exitoso', ip: '10.0.0.55' },
+  { id: 'LOG-012', timestamp: '2026-05-14T10:45:00', userId: '4', userName: 'María Gonzalez', action: 'UPDATE', module: 'PAC', detail: 'Actualización de acción correctiva en PAC-001', ip: '192.168.1.30' },
+  { id: 'LOG-013', timestamp: '2026-05-13T13:00:00', userId: '2', userName: 'Ana Silva', action: 'CONFIG', module: 'Configuración', detail: 'Cambio de plazo PAC de 30 a 45 días', ip: '192.168.1.15' },
+  { id: 'LOG-014', timestamp: '2026-05-13T14:30:00', userId: '1', userName: 'Carlos Mendoza', action: 'SIGN', module: 'PAC', detail: 'Conformación del PAC-001 con firma digital', ip: '192.168.1.10' },
+  { id: 'LOG-015', timestamp: '2026-05-12T09:15:00', userId: '3', userName: 'Luis Ramos', action: 'LOGIN', module: 'Autenticación', detail: 'Inicio de sesión exitoso (2FA verificado)', ip: '192.168.1.20' }
+];
