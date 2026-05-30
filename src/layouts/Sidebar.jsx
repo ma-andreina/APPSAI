@@ -1,13 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  Home, 
-  CalendarDays, 
-  CheckSquare, 
-  FileText, 
-  Wrench, 
-  Users, 
-  Bell, 
+import {
+  Home,
+  CalendarDays,
+  CheckSquare,
+  FileText,
+  Wrench,
+  Users,
+  Bell,
   Settings,
   LogOut
 } from 'lucide-react';
@@ -58,16 +58,16 @@ export const Sidebar = () => {
           overflow: 'hidden',
           flexShrink: 0
         }}>
-          <img 
-            src="/image.png" 
-            alt="CMP Logo" 
-            style={{ 
-              minWidth: '400%', 
-              minHeight: '400%', 
+          <img
+            src="/image.webp"
+            alt="CMP Logo"
+            style={{
+              minWidth: '400%',
+              minHeight: '400%',
               objectFit: 'contain',
               objectPosition: 'center',
               transform: 'translate(5%, 5%)'
-            }} 
+            }}
           />
         </div>
         <div>
@@ -81,7 +81,7 @@ export const Sidebar = () => {
         <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {menuItems.map((item) => (
             <li key={item.name}>
-              <NavLink 
+              <NavLink
                 to={item.path}
                 style={({ isActive }) => ({
                   display: 'flex',
@@ -116,8 +116,8 @@ export const Sidebar = () => {
           borderRadius: 'var(--radius-button)',
           transition: 'all 0.2s'
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
         >
           <LogOut size={20} />
           <span>Cerrar Sesión</span>

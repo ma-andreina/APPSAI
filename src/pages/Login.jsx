@@ -165,7 +165,7 @@ export const Login = () => {
             overflow: 'hidden'
           }}>
             <img
-              src="/image.png"
+              src="/image.webp"
               alt="CMP Logo"
               style={{
                 minWidth: '400%',

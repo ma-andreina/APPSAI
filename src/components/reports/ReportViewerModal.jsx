@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -6,10 +6,14 @@ import { reportService } from '../../services/reportService';
 import { useAuth } from '../../context/AuthContext';
 import { Skeleton } from '../ui/Skeleton';
 import { Download, FileSignature, CheckCircle, QrCode } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
+import { generateDocx } from '../../utils/docxExport';
 
 export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatureModal }) => {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const contentRef = useRef(null);
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -27,6 +31,45 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
   const isDefinitive = type === 'definitivo';
   const isSigned = report.definitive?.status === 'firmado';
   const canSign = isDefinitive && !isSigned && currentUser?.role === 'Contralor Municipal';
+
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current || !content) return;
+    setIsDownloading(true);
+    
+    // Guardamos el padding original y lo quitamos para que no se sume al margen del PDF
+    const originalPadding = contentRef.current.style.padding;
+    contentRef.current.style.padding = '0';
+
+    try {
+      const opt = {
+        margin:       [30, 30, 30, 30], // 30mm (3cm) de margen en TODAS las páginas
+        filename:     `Informe_${type.charAt(0).toUpperCase() + type.slice(1)}_${report.auditId}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
+        pagebreak:    { mode: 'avoid-all' }
+      };
+      await html2pdf().set(opt).from(contentRef.current).save();
+    } catch (err) {
+      console.error("Error al generar PDF", err);
+    } finally {
+      // Restauramos el padding visual de la web
+      contentRef.current.style.padding = originalPadding;
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadDOCX = async () => {
+    if (!content) return;
+    setIsDownloading(true);
+    try {
+      await generateDocx(content, type, report);
+    } catch (err) {
+      console.error("Error al generar DOCX", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Estilos que simulan una hoja de papel tamaño carta con márgenes institucionales (3cm)
   const pageStyle = {
@@ -60,11 +103,11 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
           </span>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Button variant="outline" size="sm" onClick={() => alert('Simulando descarga Docx')}>
-            <Download size={16} style={{ marginRight: '8px' }} /> DOCX
+          <Button variant="outline" size="sm" onClick={handleDownloadDOCX} disabled={isDownloading || loading}>
+            <Download size={16} style={{ marginRight: '8px' }} /> {isDownloading ? 'Generando...' : 'DOCX'}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => alert('Simulando descarga PDF')}>
-            <Download size={16} style={{ marginRight: '8px' }} /> PDF
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={isDownloading || loading}>
+            <Download size={16} style={{ marginRight: '8px' }} /> {isDownloading ? 'Generando...' : 'PDF'}
           </Button>
           {canSign && (
             <Button variant="primary" size="sm" onClick={() => onOpenSignatureModal()}>
@@ -87,7 +130,7 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
             <Skeleton height="150px" width="100%" />
           </div>
         ) : content && (
-          <div style={pageStyle}>
+          <div style={pageStyle} ref={contentRef}>
             {/* PORTADA / ENCABEZADO */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
               <div style={{ fontWeight: 'bold' }}>REPÚBLICA BOLIVARIANA DE VENEZUELA</div>
