@@ -1,17 +1,20 @@
+import { db } from './firebaseConfig';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { mockSystemConfig, mockAuditLogs, mockUsers, mockAudits, mockFindings, mockReports, mockPACs } from './mockData';
 
 const STORAGE_KEY = 'sai_system_config';
+const isFirebaseConfigured = !!import.meta.env.VITE_FIREBASE_API_KEY;
 
 /**
  * Obtiene la configuración persistida en localStorage o devuelve el mock por defecto.
- * En Fase 2 se reemplazará por una lectura a Firestore /system_config.
  */
 const getPersistedConfig = () => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
     const parsed = JSON.parse(stored);
-    // Invalidar si tiene el RIF o email anterior, o si las escalas no tienen N/A (menos de 3)
+    
+    // Invalidar si tiene datos viejos o escalas incompletas
     if (parsed && (
       (parsed.institutional && (parsed.institutional.rif !== 'G-20002278-7' || parsed.institutional.email !== 'Contraloría_Pedraza@hotmail.com')) ||
       (parsed.audit && parsed.audit.isoScales && parsed.audit.isoScales.length < 3)
@@ -31,76 +34,155 @@ const persistConfig = (config) => {
 
 export const settingsService = {
   /**
-   * Retorna la configuración completa del sistema (merge de mock + localStorage).
+   * Retorna la configuración completa del sistema.
+   * Si está en Firebase, la lee de la colección 'settings/institutional_config'.
+   * Si es la primera ejecución, sube los datos existentes (localStorage o mockData) a Firestore.
    */
   getSystemConfig: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const persisted = getPersistedConfig();
-        const config = persisted
-          ? { ...mockSystemConfig, ...persisted }
-          : { ...mockSystemConfig };
-        resolve(config);
-      }, 400);
-    });
+    const persisted = getPersistedConfig();
+    const fallbackConfig = persisted 
+      ? { ...mockSystemConfig, ...persisted }
+      : { ...mockSystemConfig };
+
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(fallbackConfig), 400);
+      });
+    }
+
+    try {
+      const docRef = doc(db, 'settings', 'institutional_config');
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        console.log('Sembrando configuración institucional en Firestore...');
+        await setDoc(docRef, fallbackConfig);
+        return fallbackConfig;
+      }
+
+      // Combinar los valores cargados de Firestore con mockSystemConfig
+      const remoteData = docSnap.data();
+      const mergedConfig = {
+        ...mockSystemConfig,
+        ...remoteData,
+        institutional: { ...mockSystemConfig.institutional, ...remoteData.institutional },
+        audit: { ...mockSystemConfig.audit, ...remoteData.audit },
+        appearance: { ...mockSystemConfig.appearance, ...remoteData.appearance }
+      };
+
+      // Sincronizar localmente como caché de respaldo
+      persistConfig(mergedConfig);
+      return mergedConfig;
+    } catch (error) {
+      console.error('Error al recuperar configuración de Firestore, usando cache:', error);
+      return fallbackConfig;
+    }
   },
 
   /**
    * Actualiza parámetros institucionales.
    */
   updateInstitutionalParams: async (data) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const current = getPersistedConfig() || { ...mockSystemConfig };
-        current.institutional = { ...current.institutional, ...data };
-        persistConfig(current);
-        resolve(current.institutional);
-      }, 500);
-    });
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const current = getPersistedConfig() || { ...mockSystemConfig };
+          current.institutional = { ...current.institutional, ...data };
+          persistConfig(current);
+          resolve(current.institutional);
+        }, 500);
+      });
+    }
+
+    try {
+      const docRef = doc(db, 'settings', 'institutional_config');
+      const docSnap = await getDoc(docRef);
+      const currentConfig = docSnap.exists() ? docSnap.data() : { ...mockSystemConfig };
+      
+      const updatedInstitutional = { ...currentConfig.institutional, ...data };
+      await setDoc(docRef, { ...currentConfig, institutional: updatedInstitutional }, { merge: true });
+      
+      return updatedInstitutional;
+    } catch (error) {
+      console.error('Error al actualizar parámetros institucionales en Firestore:', error);
+      throw error;
+    }
   },
 
   /**
    * Actualiza configuración de auditorías (plazos, escalas, etc.).
    */
   updateAuditConfig: async (data) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const current = getPersistedConfig() || { ...mockSystemConfig };
-        current.audit = { ...current.audit, ...data };
-        persistConfig(current);
-        resolve(current.audit);
-      }, 500);
-    });
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const current = getPersistedConfig() || { ...mockSystemConfig };
+          current.audit = { ...current.audit, ...data };
+          persistConfig(current);
+          resolve(current.audit);
+        }, 500);
+      });
+    }
+
+    try {
+      const docRef = doc(db, 'settings', 'institutional_config');
+      const docSnap = await getDoc(docRef);
+      const currentConfig = docSnap.exists() ? docSnap.data() : { ...mockSystemConfig };
+
+      const updatedAudit = { ...currentConfig.audit, ...data };
+      await setDoc(docRef, { ...currentConfig, audit: updatedAudit }, { merge: true });
+
+      return updatedAudit;
+    } catch (error) {
+      console.error('Error al actualizar configuración de auditoría en Firestore:', error);
+      throw error;
+    }
   },
 
   /**
    * Actualiza preferencias de apariencia (tema, zona horaria, formato fecha).
    */
   updateAppearance: async (preferences) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const current = getPersistedConfig() || { ...mockSystemConfig };
-        current.appearance = { ...current.appearance, ...preferences };
-        persistConfig(current);
+    // Aplicar tema inmediatamente al DOM
+    if (preferences.theme) {
+      document.documentElement.setAttribute(
+        'data-theme',
+        preferences.theme === 'dark' ? 'dark' : ''
+      );
+    }
 
-        // Aplicar tema inmediatamente al DOM
-        if (preferences.theme) {
-          document.documentElement.setAttribute(
-            'data-theme',
-            preferences.theme === 'dark' ? 'dark' : ''
-          );
-        }
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const current = getPersistedConfig() || { ...mockSystemConfig };
+          current.appearance = { ...current.appearance, ...preferences };
+          persistConfig(current);
+          resolve(current.appearance);
+        }, 300);
+      });
+    }
 
-        resolve(current.appearance);
-      }, 300);
-    });
+    try {
+      const docRef = doc(db, 'settings', 'institutional_config');
+      const docSnap = await getDoc(docRef);
+      const currentConfig = docSnap.exists() ? docSnap.data() : { ...mockSystemConfig };
+
+      const updatedAppearance = { ...currentConfig.appearance, ...preferences };
+      await setDoc(docRef, { ...currentConfig, appearance: updatedAppearance }, { merge: true });
+
+      return updatedAppearance;
+    } catch (error) {
+      console.error('Error al actualizar preferencias de apariencia en Firestore:', error);
+      throw error;
+    }
   },
 
   /**
    * Obtiene entradas de la bitácora con filtros opcionales.
-   * @param {Object} filters — { startDate, endDate, userId, actionType }
    */
   getAuditLogs: async (filters = {}) => {
+    // Nota: Por simplicidad y consistencia en el demo del POA, los logs siguen siendo consultados de mockData
+    // En producción se cambiaría a una lectura de la colección '/audit_logs' ordenada cronológicamente.
     return new Promise((resolve) => {
       setTimeout(() => {
         let logs = [...mockAuditLogs];
@@ -119,9 +201,7 @@ export const settingsService = {
           logs = logs.filter((log) => log.action === filters.actionType);
         }
 
-        // Ordenar por fecha descendente (más reciente primero)
         logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
         resolve(logs);
       }, 300);
     });
@@ -134,8 +214,8 @@ export const settingsService = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          firebaseStatus: 'connected',
-          lastBackup: '2026-05-17T06:00:00',
+          firebaseStatus: isFirebaseConfigured ? 'connected' : 'simulation',
+          lastBackup: new Date().toISOString(),
           stats: {
             totalUsers: mockUsers.length,
             totalAudits: mockAudits.length,
@@ -144,8 +224,8 @@ export const settingsService = {
             totalPACs: mockPACs.length,
             totalLogs: mockAuditLogs.length
           },
-          storageUsed: '2.4 MB',
-          storageLimit: '10 GB'
+          storageUsed: '0.4 MB',
+          storageLimit: '5 GB'
         });
       }, 500);
     });
@@ -188,3 +268,4 @@ export const settingsService = {
     });
   }
 };
+
