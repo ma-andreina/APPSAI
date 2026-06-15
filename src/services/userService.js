@@ -150,17 +150,19 @@ export const userService = {
 
   createUser: async (userData) => {
     const userId = `USR-${Date.now()}`;
+    const { password, ...otherData } = userData;
     const newUser = {
-      ...userData,
+      ...otherData,
       id: userId,
       avatar: userData.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
       status: userData.status || 'Activo',
       twoFactorEnabled: userData.twoFactorEnabled || false,
+      tempPassword: password || '',
       createdAt: new Date().toISOString().split('T')[0]
     };
 
     if (!isFirebaseConfigured) {
-      localUsers.push(newUser);
+      localUsers.push({ ...newUser, password });
       return newUser;
     }
 

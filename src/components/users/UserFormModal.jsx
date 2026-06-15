@@ -36,6 +36,7 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
       setFormData({
         name: '',
         email: '',
+        password: '',
         role: 'Auditor',
         status: 'Activo',
         twoFactorEnabled: false
@@ -105,6 +106,22 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             placeholder="ejemplo@cmp.gob.ve"
           />
         </div>
+
+        {!isEditing && (
+          <div>
+            <label style={labelStyle}>Contraseña Inicial de Acceso</label>
+            <input 
+              type="password" 
+              name="password" 
+              value={formData.password || ''} 
+              onChange={handleChange} 
+              style={inputStyle} 
+              required 
+              placeholder="Mínimo 6 caracteres"
+              minLength={6}
+            />
+          </div>
+        )}
 
         <div>
           <label style={labelStyle}>Rol en el Sistema (RBAC)</label>

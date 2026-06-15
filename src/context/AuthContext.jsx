@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { userService } from '../services/userService';
-import { auth } from '../services/firebaseConfig';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from '../services/firebaseConfig';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
 
 // Crear el contexto
 export const AuthContext = createContext();
@@ -37,6 +38,11 @@ export const AuthProvider = ({ children }) => {
       };
       restoreSession();
     } else {
+      // Configurar persistencia a nivel de sesión (exige usuario/clave al abrir nueva pestaña/navegador)
+      setPersistence(auth, browserSessionPersistence).catch(err => {
+        console.error('Error al configurar persistencia de sesión:', err);
+      });
+
       // Escuchar cambios de sesión reales de Firebase Auth
       unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
         if (firebaseUser && firebaseUser.email) {
@@ -98,13 +104,26 @@ export const AuthProvider = ({ children }) => {
           await signInWithEmailAndPassword(auth, email, password);
         } catch (authErr) {
           // Registro al vuelo (on-demand):
-          // Si el usuario existe en Firestore pero no en Auth, se registra con la contraseña suministrada
+          // Si el usuario existe en Firestore pero no en Auth, se registra con la contraseña de Firestore
           if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
-            try {
-              // Reintentar registro e inicio de sesión automático
-              await createUserWithEmailAndPassword(auth, email, password);
-            } catch (createErr) {
-              throw new Error('Credenciales inválidas o contraseña insegura');
+            const expectedPassword = user.tempPassword || 'Pedraza2026!';
+            
+            if (password === expectedPassword) {
+              try {
+                // Registrar e iniciar sesión automático
+                await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Si existía una contraseña temporal, eliminarla del perfil en Firestore por seguridad
+                if (user.tempPassword) {
+                  const userRef = doc(db, 'users', user.id);
+                  await updateDoc(userRef, { tempPassword: null });
+                  user.tempPassword = null;
+                }
+              } catch (createErr) {
+                throw new Error('Error al registrar usuario en la base de seguridad');
+              }
+            } else {
+              throw new Error('Credenciales inválidas');
             }
           } else {
             throw new Error('Credenciales inválidas');
@@ -239,4 +258,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
