@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { userService } from '../services/userService';
+import { auth } from '../services/firebaseConfig';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 
 // Crear el contexto
 export const AuthContext = createContext();
@@ -9,13 +11,7 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 
-/**
- * Estados de autenticación:
- * - 'idle'           → Verificando sesión persistida
- * - 'unauthenticated' → No hay sesión, mostrar login
- * - '2fa'            → Credenciales válidas, esperando código 2FA
- * - 'authenticated'  → Sesión activa
- */
+const isFirebaseConfigured = !!import.meta.env.VITE_FIREBASE_API_KEY;
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -25,19 +21,51 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Al cargar, verificamos si hay una sesión persistida en sessionStorage
-    const restoreSession = () => {
-      const persisted = userService.getPersistedSession();
-      if (persisted) {
-        setCurrentUser(persisted);
-        setAuthStep('authenticated');
-      } else {
-        setAuthStep('unauthenticated');
-      }
-      setLoading(false);
-    };
+    let unsubscribe = () => {};
 
-    restoreSession();
+    if (!isFirebaseConfigured || !auth) {
+      // Fallback local: recuperar sesión persistida en sessionStorage
+      const restoreSession = () => {
+        const persisted = userService.getPersistedSession();
+        if (persisted) {
+          setCurrentUser(persisted);
+          setAuthStep('authenticated');
+        } else {
+          setAuthStep('unauthenticated');
+        }
+        setLoading(false);
+      };
+      restoreSession();
+    } else {
+      // Escuchar cambios de sesión reales de Firebase Auth
+      unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser && firebaseUser.email) {
+          try {
+            const userProfile = await userService.getUserByEmail(firebaseUser.email);
+            setCurrentUser(userProfile);
+            setAuthStep('authenticated');
+            userService.persistSession(userProfile);
+          } catch (err) {
+            console.error('Error al restaurar sesión desde Firebase Auth:', err);
+            setCurrentUser(null);
+            setAuthStep('unauthenticated');
+          }
+        } else {
+          setCurrentUser(null);
+          const persisted = userService.getPersistedSession();
+          if (persisted && persisted.name) {
+            // Si hay una sesión mock guardada localmente
+            setCurrentUser(persisted);
+            setAuthStep('authenticated');
+          } else {
+            setAuthStep('unauthenticated');
+          }
+        }
+        setLoading(false);
+      });
+    }
+
+    return () => unsubscribe();
   }, []);
 
   /**
@@ -49,7 +77,40 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError('');
     try {
-      const user = await userService.validateCredentials(email, password);
+      let user = null;
+
+      if (!isFirebaseConfigured || !auth) {
+        user = await userService.validateCredentials(email, password);
+      } else {
+        // 1. Verificar primero si el correo corresponde a un funcionario activo de la Contraloría
+        try {
+          user = await userService.getUserByEmail(email);
+        } catch (err) {
+          throw new Error('Usuario no registrado en la institución');
+        }
+
+        if (user.status !== 'Activo') {
+          throw new Error('La cuenta de este usuario está desactivada');
+        }
+
+        // 2. Intentar autenticar con Firebase Auth
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch (authErr) {
+          // Registro al vuelo (on-demand):
+          // Si el usuario existe en Firestore pero no en Auth, se registra con la contraseña suministrada
+          if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
+            try {
+              // Reintentar registro e inicio de sesión automático
+              await createUserWithEmailAndPassword(auth, email, password);
+            } catch (createErr) {
+              throw new Error('Credenciales inválidas o contraseña insegura');
+            }
+          } else {
+            throw new Error('Credenciales inválidas');
+          }
+        }
+      }
 
       if (user.twoFactorEnabled) {
         // Requiere 2FA — guardar usuario pendiente y cambiar paso
@@ -113,7 +174,10 @@ export const AuthProvider = ({ children }) => {
     setAuthStep('unauthenticated');
     setError('');
     userService.clearSession();
-    // En Fase 2: firebase.auth().signOut()
+    
+    if (isFirebaseConfigured && auth) {
+      signOut(auth).catch(err => console.error('Error al cerrar sesión de Firebase Auth:', err));
+    }
   };
 
   /**
@@ -126,6 +190,21 @@ export const AuthProvider = ({ children }) => {
       const allUsers = await userService.getAll();
       const user = allUsers.find((u) => u.id === userId);
       if (!user) throw new Error('Usuario no encontrado');
+
+      // Si Firebase está configurado, iniciamos sesión con la cuenta de correo y su contraseña por defecto en Auth
+      if (isFirebaseConfigured && auth && user.email) {
+        try {
+          await signInWithEmailAndPassword(auth, user.email, 'Pedraza2026!');
+        } catch (authErr) {
+          if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
+            try {
+              await createUserWithEmailAndPassword(auth, user.email, 'Pedraza2026!');
+            } catch (createErr) {
+              console.error('Error al registrar usuario de demo:', createErr);
+            }
+          }
+        }
+      }
 
       setCurrentUser(user);
       setAuthStep('authenticated');
@@ -160,3 +239,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

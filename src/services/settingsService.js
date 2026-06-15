@@ -16,7 +16,7 @@ const getPersistedConfig = () => {
     
     // Invalidar si tiene datos viejos o escalas incompletas
     if (parsed && (
-      (parsed.institutional && (parsed.institutional.rif !== 'G-20002278-7' || parsed.institutional.email !== 'Contraloría_Pedraza@hotmail.com')) ||
+      (parsed.institutional && (parsed.institutional.rif !== 'G-20002278-7' || parsed.institutional.email !== 'contraloria_pedraza@hotmail.com')) ||
       (parsed.audit && parsed.audit.isoScales && parsed.audit.isoScales.length < 3)
     )) {
       localStorage.removeItem(STORAGE_KEY);

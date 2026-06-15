@@ -1,7 +1,7 @@
 // Datos de demostración para el Sistema de Auditoría Informática (SAI)
 
 export const mockUsers = [
-  { id: '1', name: 'Jose Alexander Jimenez Devia', role: 'Contralor Municipal', email: 'Contraloría_Pedraza@hotmail.com', avatar: 'JA', status: 'Activo', twoFactorEnabled: true, createdAt: '2025-01-15' },
+  { id: '1', name: 'Jose Alexander Jimenez Devia', role: 'Contralor Municipal', email: 'contraloria_pedraza@hotmail.com', avatar: 'JA', status: 'Activo', twoFactorEnabled: true, createdAt: '2025-01-15' },
   { id: '2', name: 'Ana Silva', role: 'Director General', email: 'asilva@cmp.gob.ve', avatar: 'AS', status: 'Activo', twoFactorEnabled: true, createdAt: '2025-02-01' },
   { id: '3', name: 'Luis Ramos', role: 'Director de Control', email: 'lramos@cmp.gob.ve', avatar: 'LR', status: 'Activo', twoFactorEnabled: false, createdAt: '2025-03-10' },
   { id: '4', name: 'María Gonzalez', role: 'Coordinador de Auditoría', email: 'mgonzalez@cmp.gob.ve', avatar: 'MG', status: 'Inactivo', twoFactorEnabled: false, createdAt: '2025-04-20' },
@@ -888,7 +888,7 @@ export const mockSystemConfig = {
     institutionName: 'Contraloría del Municipio Pedraza',
     address: 'Contraloría del Municipio Pedraza - Estado Barinas Av. 7, entre calles 13 y 14, Edif. Sede de la Biblioteca Pública, Oficina Principal Sector Cultura I, Parroquia Ciudad Bolivia.',
     phone: '+58 273-9210251',
-    email: 'Contraloría_Pedraza@hotmail.com',
+    email: 'contraloria_pedraza@hotmail.com',
     rif: 'G-20002278-7',
     fiscalYear: 2026,
     maxAuthority: 'Jose Alexander Jimenez Devia',

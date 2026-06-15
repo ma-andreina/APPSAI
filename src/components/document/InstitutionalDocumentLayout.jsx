@@ -14,7 +14,7 @@ const INSTITUTIONAL_DATA = {
   office: 'DESPACHO DEL CONTRALOR',
   address:
     'Contraloría del Municipio Pedraza - Estado Barinas Av. 7, entre calles 13 y 14, Edif. Sede de la Biblioteca Pública, Oficina Principal Sector Cultura I, Parroquia Ciudad Bolivia.',
-  email: 'Contraloría_Pedraza@hotmail.com',
+  email: 'contraloria_pedraza@hotmail.com',
   phone: '+58 273-9210251',
   logoLeft: '/logo_cmp.svg',
   logoRight: '/sncf-logo.png',

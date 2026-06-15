@@ -345,7 +345,7 @@ export const generateDocx = async (content, type, report) => {
                     font: "Arial"
                   }),
                   new TextRun({
-                    text: 'Email: Contraloría_Pedraza@hotmail.com | Telefax: +58 273-9210251',
+                    text: 'Email: contraloria_pedraza@hotmail.com | Telefax: +58 273-9210251',
                     size: 14, // 7pt
                     font: "Arial",
                     break: 1
