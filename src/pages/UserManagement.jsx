@@ -53,7 +53,14 @@ export const UserManagement = () => {
       fetchUsers();
       handleCloseModal();
     } catch (error) {
-      addNotification('Error al guardar el usuario', 'error');
+      console.error('Error al guardar el usuario:', error);
+      alert(
+        'Error al guardar el usuario en Firebase:\n\n' +
+        error.message +
+        '\n\nCausas comunes:\n' +
+        '1. Las Reglas de Seguridad (Rules) de Firestore en tu consola de Firebase están bloqueando las escrituras.\n' +
+        '2. No has habilitado el proveedor de inicio de sesión "Correo electrónico/contraseña" en Firebase Authentication (pestaña Sign-in method).'
+      );
     }
   };
 
