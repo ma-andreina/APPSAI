@@ -72,7 +72,15 @@ export const userService = {
     try {
       const stored = sessionStorage.getItem(SESSION_KEY);
       if (!stored) return null;
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Auto-actualizar si es el usuario Carlos Mendoza anterior
+      if (parsed && parsed.name === 'Carlos Mendoza') {
+        parsed.name = 'Jose Alexander Jimenez Devia';
+        parsed.avatar = 'JA';
+        parsed.email = 'Contraloría_Pedraza@hotmail.com';
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(parsed));
+      }
+      return parsed;
     } catch {
       return null;
     }

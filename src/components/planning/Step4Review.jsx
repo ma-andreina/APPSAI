@@ -42,18 +42,28 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
         <head>
           <title>${tituloDocumento}</title>
           <style>
-            body { margin: 0; padding: 2rem; font-family: "Times New Roman", Times, serif; }
+            body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
             table { border-collapse: collapse; width: 100%; }
             th, td { border: 1px solid #000; padding: 0.5rem; }
-            @media print { body { margin: 0; } }
           </style>
         </head>
         <body>${contenido.innerHTML}</body>
       </html>
     `);
+
+    // Copiar estilos de la ventana principal para que se aplique la papelería
+    const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+    stylesheets.forEach(stylesheet => {
+      ventana.document.head.appendChild(stylesheet.cloneNode(true));
+    });
+
     ventana.document.close();
-    ventana.focus();
-    ventana.print();
+
+    // Retardo para dar tiempo a que los estilos se apliquen
+    setTimeout(() => {
+      ventana.focus();
+      ventana.print();
+    }, 250);
   };
 
   const tabStyle = (tabName) => ({

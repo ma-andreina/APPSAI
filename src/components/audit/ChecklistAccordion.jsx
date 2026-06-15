@@ -28,8 +28,7 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
   const getStatusColor = (status) => {
     switch (status) {
       case 'Cumple': return 'var(--status-closed)';
-      case 'No Cumple': return 'var(--status-critical)';
-      case 'Parcial': return 'var(--status-review)';
+      case 'No cumple': return 'var(--status-critical)';
       case 'N/A': return 'var(--text-secondary)';
       default: return 'var(--text-secondary)';
     }
@@ -98,13 +97,16 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem' }}>Evaluación</label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {['Cumple', 'Parcial', 'No Cumple', 'N/A'].map(statusOption => (
+                {['Cumple', 'No cumple', 'N/A'].map(statusOption => (
                   <button
                     key={statusOption}
                     onClick={() => {
                       setLocalStatus(statusOption);
-                      if ((statusOption === 'No Cumple' || statusOption === 'Parcial') && onTriggerFinding) {
+                      if (statusOption === 'No cumple' && onTriggerFinding) {
                         onTriggerFinding({ ...control, observations: localObservations });
+                      }
+                      if (statusOption === 'Cumple' || statusOption === 'N/A') {
+                        setIsOpen(false);
                       }
                     }}
                     style={{
@@ -146,7 +148,7 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
             </div>
 
             {/* Botón Preventivo de Hallazgo (Si aplica) */}
-            {(localStatus === 'No Cumple' || localStatus === 'Parcial') && (
+            {(localStatus === 'No cumple') && (
               <div style={{ marginTop: '0.5rem', padding: '1rem', backgroundColor: 'var(--surface-light)', borderRadius: 'var(--radius-button)', borderLeft: '4px solid var(--status-critical)' }}>
                 <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem' }}>
                   <strong>¡Atención!</strong> Este control ha sido marcado con desviación. Deberá documentarse un hallazgo estructurado para el Informe Preliminar.

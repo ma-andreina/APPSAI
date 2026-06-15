@@ -8,6 +8,7 @@ import { Skeleton } from '../ui/Skeleton';
 import { Download, FileSignature, CheckCircle, QrCode } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { generateDocx } from '../../utils/docxExport';
+import { InstitutionalDocumentLayout } from '../document/InstitutionalDocumentLayout';
 
 export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatureModal }) => {
   const [content, setContent] = useState(null);
@@ -130,11 +131,9 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
             <Skeleton height="150px" width="100%" />
           </div>
         ) : content && (
-          <div style={pageStyle} ref={contentRef}>
-            {/* PORTADA / ENCABEZADO */}
+          <InstitutionalDocumentLayout isScreen={true} ref={contentRef}>
+            {/* PORTADA DEL INFORME (Primer bloque del cuerpo) */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-              <div style={{ fontWeight: 'bold' }}>REPÚBLICA BOLIVARIANA DE VENEZUELA</div>
-              <div style={{ fontWeight: 'bold', marginBottom: '1rem' }}>CONTRALORÍA DEL MUNICIPIO PEDRAZA DEL ESTADO BARINAS</div>
               <div style={h1Style}>{content.portada.unidadOrganizativa}</div>
               <div style={h1Style}>{content.portada.tituloActuacion}</div>
               <div style={h1Style}>{content.portada.tipoInforme}</div>
@@ -222,7 +221,7 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
             )}
 
             {/* BLOQUE DE FIRMA (Evitando viudas/huérfanas visualmente añadiendo un margen superior grande) */}
-            {isDefinitive ? (
+            {isDefinitive && (
               <div style={{ marginTop: '5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 
                 {isSigned ? (
@@ -258,15 +257,8 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
                   </div>
                 )}
               </div>
-            ) : (
-              // Pie de página para Informe Preliminar
-              <div style={{ marginTop: '5rem', borderTop: '1px solid var(--border-light)', paddingTop: '1rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '10pt' }}>
-                <p style={{ margin: 0 }}>{content.portada.unidadOrganizativa}</p>
-                <p style={{ margin: 0, fontWeight: 'bold' }}>{content.pieFirma.institucion}</p>
-              </div>
             )}
-
-          </div>
+          </InstitutionalDocumentLayout>
         )}
       </div>
     </Modal>

@@ -95,9 +95,12 @@ export const Step2AuditTeam = ({ teamData, generalData, cronograma, updateTeam, 
               <input 
                 type="text" 
                 value={newMember.cedula} 
-                onChange={(e) => setNewMember({ ...newMember, cedula: e.target.value })} 
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setNewMember({ ...newMember, cedula: val });
+                }} 
                 style={inputStyle}
-                placeholder="V-12345678"
+                placeholder="12345678"
               />
             </div>
             <div>

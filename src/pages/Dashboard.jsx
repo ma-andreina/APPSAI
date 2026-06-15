@@ -57,10 +57,6 @@ export const Dashboard = () => {
             <h1 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>Proyectos de Auditoría</h1>
             <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Gestiona y supervisa las auditorías activas</p>
           </div>
-          <Button variant="primary" style={{ gap: '8px' }}>
-            <Plus size={18} />
-            Crear Proyecto
-          </Button>
         </div>
 
         <div style={{ flex: 1, minHeight: 0 }}>

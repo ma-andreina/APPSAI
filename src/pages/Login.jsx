@@ -165,14 +165,12 @@ export const Login = () => {
             overflow: 'hidden'
           }}>
             <img
-              src="/image.webp"
+              src="/logo_cmp.svg"
               alt="CMP Logo"
               style={{
-                minWidth: '400%',
-                minHeight: '400%',
-                objectFit: 'contain',
-                objectPosition: 'center',
-                transform: 'translate(5%, 5%)'
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
               }}
             />
           </div>

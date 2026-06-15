@@ -1,17 +1,37 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun, Table, TableRow, TableCell, BorderStyle, WidthType, VerticalAlign } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, ImageRun, Table, TableRow, TableCell, BorderStyle, WidthType, VerticalAlign, Header, Footer } from 'docx';
 import { saveAs } from 'file-saver';
 import QRCode from 'qrcode';
 
 // Margen de 3cm en twips (1 cm = 567 twips)
 const MARGIN_3CM = 1701;
 
+/**
+ * Función auxiliar para descargar imágenes y obtener los bytes
+ */
+const fetchImageAsArrayBuffer = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Error fetching ${url}`);
+  const blob = await response.blob();
+  return new Uint8Array(await blob.arrayBuffer());
+};
+
 export const generateDocx = async (content, type, report) => {
+  // 0. Cargar los logos oficiales
+  let logoLeftBytes = null;
+  let logoRightBytes = null;
+  try {
+    logoLeftBytes = await fetchImageAsArrayBuffer('/cmp-logo.png');
+    logoRightBytes = await fetchImageAsArrayBuffer('/sncf-logo.png');
+  } catch (err) {
+    console.error("Error cargando logos oficiales para la exportación Word:", err);
+  }
+
   const children = [];
 
   // Función auxiliar para crear párrafos
   const createParagraph = (text, options = {}) => {
     return new Paragraph({
-      children: [new TextRun({ text, ...options })],
+      children: [new TextRun({ text, font: "Arial", ...options })],
       alignment: options.alignment || AlignmentType.JUSTIFIED,
       spacing: { after: 200 }
     });
@@ -26,14 +46,10 @@ export const generateDocx = async (content, type, report) => {
     });
   };
 
-  // 1. Portada / Encabezado
-  children.push(createParagraph('REPÚBLICA BOLIVARIANA DE VENEZUELA', { bold: true, alignment: AlignmentType.CENTER }));
-  children.push(createParagraph('CONTRALORÍA DEL MUNICIPIO PEDRAZA DEL ESTADO BARINAS', { bold: true, alignment: AlignmentType.CENTER }));
-  children.push(createParagraph(' '));
-  children.push(createParagraph(content.portada.unidadOrganizativa, { bold: true, alignment: AlignmentType.CENTER }));
-  children.push(createParagraph(content.portada.tituloActuacion, { bold: true, alignment: AlignmentType.CENTER }));
-  children.push(createParagraph(content.portada.tipoInforme, { bold: true, alignment: AlignmentType.CENTER }));
-  children.push(createParagraph(' '));
+  // 1. Portada del Informe (en el cuerpo, excluyendo la cabecera repetitiva)
+  children.push(createParagraph(content.portada.unidadOrganizativa, { bold: true, alignment: AlignmentType.CENTER, size: 28 })); // 14pt
+  children.push(createParagraph(content.portada.tituloActuacion, { bold: true, alignment: AlignmentType.CENTER, size: 28 })); // 14pt
+  children.push(createParagraph(content.portada.tipoInforme, { bold: true, alignment: AlignmentType.CENTER, size: 28 })); // 14pt
   children.push(createParagraph(' '));
 
   // 2. Contenido dinámico según el tipo
@@ -46,7 +62,12 @@ export const generateDocx = async (content, type, report) => {
 
     children.push(createHeading('3. Observaciones Relevantes', HeadingLevel.HEADING_2));
     content.observacionesRelevantes.forEach(obs => {
-      children.push(new Paragraph({ text: obs, bullet: { level: 0 }, alignment: AlignmentType.JUSTIFIED }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: obs, font: "Arial" })],
+        bullet: { level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 120 }
+      }));
     });
 
     children.push(createHeading('4. Conclusión', HeadingLevel.HEADING_2));
@@ -54,7 +75,12 @@ export const generateDocx = async (content, type, report) => {
 
     children.push(createHeading('5. Recomendaciones', HeadingLevel.HEADING_2));
     content.recomendaciones.forEach(rec => {
-      children.push(new Paragraph({ text: rec, bullet: { level: 0 }, alignment: AlignmentType.JUSTIFIED }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: rec, font: "Arial" })],
+        bullet: { level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 120 }
+      }));
     });
   } else {
     // Capítulo I
@@ -69,7 +95,12 @@ export const generateDocx = async (content, type, report) => {
     children.push(createParagraph('Objetivo General: ' + content.capitulo1.objetivos.general, { bold: true }));
     children.push(createParagraph('Objetivos Específicos:', { bold: true }));
     content.capitulo1.objetivos.especificos.forEach(obj => {
-      children.push(new Paragraph({ text: obj, bullet: { level: 0 }, alignment: AlignmentType.JUSTIFIED }));
+      children.push(new Paragraph({
+        children: [new TextRun({ text: obj, font: "Arial" })],
+        bullet: { level: 0 },
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 120 }
+      }));
     });
 
     children.push(createHeading('1.4. Enfoque', HeadingLevel.HEADING_3));
@@ -101,7 +132,12 @@ export const generateDocx = async (content, type, report) => {
       children.push(createParagraph('Conclusión: ' + content.capitulo4.conclusion));
       children.push(createParagraph('Recomendaciones:', { bold: true }));
       content.capitulo4.recomendaciones.forEach(rec => {
-        children.push(new Paragraph({ text: rec, bullet: { level: 0 }, alignment: AlignmentType.JUSTIFIED }));
+        children.push(new Paragraph({
+          children: [new TextRun({ text: rec, font: "Arial" })],
+          bullet: { level: 0 },
+          alignment: AlignmentType.JUSTIFIED,
+          spacing: { after: 120 }
+        }));
       });
     }
   }
@@ -153,10 +189,10 @@ export const generateDocx = async (content, type, report) => {
                 }),
                 new TableCell({
                   children: [
-                    new Paragraph({ children: [new TextRun({ text: 'FIRMADO DIGITALMENTE POR:', bold: true, size: 22 })] }),
-                    new Paragraph({ children: [new TextRun({ text: report.definitive.signedBy, bold: true, size: 28 })], spacing: { before: 100, after: 100 } }),
-                    new Paragraph({ children: [new TextRun({ text: content.portada.unidadOrganizativa, size: 20 })] }),
-                    new Paragraph({ children: [new TextRun({ text: `Hash de integridad: ${hash}`, size: 16 })], spacing: { before: 100 } })
+                    new Paragraph({ children: [new TextRun({ text: 'FIRMADO DIGITALMENTE POR:', bold: true, size: 22, font: "Arial" })] }),
+                    new Paragraph({ children: [new TextRun({ text: report.definitive.signedBy, bold: true, size: 28, font: "Arial" })], spacing: { before: 100, after: 100 } }),
+                    new Paragraph({ children: [new TextRun({ text: content.portada.unidadOrganizativa, size: 20, font: "Arial" })] }),
+                    new Paragraph({ children: [new TextRun({ text: `Hash de integridad: ${hash}`, size: 16, font: "Arial" })], spacing: { before: 100 } })
                   ],
                   width: { size: 80, type: WidthType.PERCENTAGE },
                   verticalAlign: VerticalAlign.CENTER,
@@ -181,10 +217,147 @@ export const generateDocx = async (content, type, report) => {
       children.push(createParagraph('Cargo: ' + content.pieFirma.firmanteCargo, { bold: true, alignment: AlignmentType.CENTER }));
       children.push(createParagraph('Designado según Resolución N° XXXX-XX', { alignment: AlignmentType.CENTER, size: 20 }));
     }
-  } else {
-    children.push(createParagraph(content.portada.unidadOrganizativa, { alignment: AlignmentType.CENTER }));
-    children.push(createParagraph(content.pieFirma.institucion, { bold: true, alignment: AlignmentType.CENTER }));
   }
+
+  // --- CONSTRUIR CABECERA REPETITIVA ---
+  const headerElements = [];
+  if (logoLeftBytes && logoRightBytes) {
+    const headerTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: { style: BorderStyle.NONE },
+        left: { style: BorderStyle.NONE },
+        right: { style: BorderStyle.NONE },
+        bottom: { style: BorderStyle.SINGLE, size: 24, color: "0F2D59" }, // Línea azul de 3pt
+        insideHorizontal: { style: BorderStyle.NONE },
+        insideVertical: { style: BorderStyle.NONE }
+      },
+      rows: [
+        new TableRow({
+          children: [
+            // Logo izquierdo + RIF
+            new TableCell({
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              verticalAlign: VerticalAlign.CENTER,
+              borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new ImageRun({
+                      data: logoLeftBytes,
+                      transformation: { width: 50, height: 50 }
+                    }),
+                    new TextRun({
+                      text: 'G-20002278-7',
+                      bold: true,
+                      size: 14, // 7pt
+                      font: "Arial",
+                      break: 1
+                    })
+                  ]
+                })
+              ]
+            }),
+            // Texto central institucional
+            new TableCell({
+              width: { size: 60, type: WidthType.PERCENTAGE },
+              verticalAlign: VerticalAlign.CENTER,
+              borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  spacing: { line: 240 },
+                  children: [
+                    new TextRun({ text: 'REPÚBLICA BOLIVARIANA DE VENEZUELA', bold: true, size: 18, font: "Arial" }),
+                    new TextRun({ text: 'MUNICIPIO PEDRAZA - ESTADO BARINAS', bold: true, size: 18, font: "Arial", break: 1 }),
+                    new TextRun({ text: 'CONTRALORÍA DEL MUNICIPIO', bold: true, size: 18, font: "Arial", break: 1 }),
+                    new TextRun({ text: '¡CONTRALORES SOMO TODOS!', bold: true, size: 18, color: "CC0000", font: "Arial", break: 1 }),
+                    new TextRun({ text: 'DESPACHO DEL CONTRALOR', bold: true, size: 18, font: "Arial", break: 1 })
+                  ]
+                })
+              ]
+            }),
+            // Logo derecho
+            new TableCell({
+              width: { size: 20, type: WidthType.PERCENTAGE },
+              verticalAlign: VerticalAlign.CENTER,
+              borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new ImageRun({
+                      data: logoRightBytes,
+                      transformation: { width: 50, height: 50 }
+                    })
+                  ]
+                })
+              ]
+            })
+          ]
+        })
+      ]
+    });
+    headerElements.push(headerTable);
+  } else {
+    // Fallback de texto si las imágenes fallan
+    headerElements.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({ text: 'REPÚBLICA BOLIVARIANA DE VENEZUELA', bold: true, size: 18, font: "Arial" }),
+          new TextRun({ text: 'MUNICIPIO PEDRAZA - ESTADO BARINAS', bold: true, size: 18, font: "Arial", break: 1 }),
+          new TextRun({ text: 'CONTRALORÍA DEL MUNICIPIO', bold: true, size: 18, font: "Arial", break: 1 }),
+          new TextRun({ text: '¡CONTRALORES SOMO TODOS!', bold: true, size: 18, color: "CC0000", font: "Arial", break: 1 }),
+          new TextRun({ text: 'DESPACHO DEL CONTRALOR', bold: true, size: 18, font: "Arial", break: 1 })
+        ]
+      })
+    );
+  }
+
+  // --- CONSTRUIR PIE DE PÁGINA REPETITIVO ---
+  const footerTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 24, color: "0F2D59" }, // Línea azul de 3pt
+      left: { style: BorderStyle.NONE },
+      right: { style: BorderStyle.NONE },
+      bottom: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE },
+      insideVertical: { style: BorderStyle.NONE }
+    },
+    rows: [
+      new TableRow({
+        children: [
+          new TableCell({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            verticalAlign: VerticalAlign.CENTER,
+            borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } },
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 100, line: 200 },
+                children: [
+                  new TextRun({
+                    text: 'Contraloría del Municipio Pedraza - Estado Barinas Av. 7, entre calles 13 y 14, Edif. Sede de la Biblioteca Pública, Oficina Principal Sector Cultura I, Parroquia Ciudad Bolivia.',
+                    size: 14, // 7pt
+                    font: "Arial"
+                  }),
+                  new TextRun({
+                    text: 'Email: Contraloría_Pedraza@hotmail.com | Telefax: +58 273-9210251',
+                    size: 14, // 7pt
+                    font: "Arial",
+                    break: 1
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      })
+    ]
+  });
 
   // Generar el documento con formato Carta y márgenes de 3cm (1701 twips)
   const doc = new Document({
@@ -193,7 +366,7 @@ export const generateDocx = async (content, type, report) => {
         document: {
           run: {
             size: 24, // 12pt (24 half-points)
-            font: "Times New Roman"
+            font: "Arial"
           },
           paragraph: {
             spacing: { line: 360 } // 1.5 line spacing
@@ -206,6 +379,16 @@ export const generateDocx = async (content, type, report) => {
         page: {
           size: { width: 12240, height: 15840 }, // Carta en twips
           margin: { top: MARGIN_3CM, right: MARGIN_3CM, bottom: MARGIN_3CM, left: MARGIN_3CM }
+        },
+        headers: {
+          default: new Header({
+            children: headerElements
+          })
+        },
+        footers: {
+          default: new Footer({
+            children: [footerTable]
+          })
         }
       },
       children

@@ -3,8 +3,10 @@ import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Building2, Save } from 'lucide-react';
+import { useAppContext } from '../../context/AppContext';
 
 export const InstitutionalSettings = ({ config, onSave, saving }) => {
+  const { addNotification } = useAppContext();
   const [formData, setFormData] = React.useState({
     institutionName: '',
     address: '',
@@ -13,7 +15,9 @@ export const InstitutionalSettings = ({ config, onSave, saving }) => {
     rif: '',
     fiscalYear: new Date().getFullYear(),
     maxAuthority: '',
-    maxAuthorityRole: ''
+    maxAuthorityRole: '',
+    maxAuthorityAppointment: '',
+    maxAuthorityGazette: ''
   });
 
   React.useEffect(() => {
@@ -23,11 +27,24 @@ export const InstitutionalSettings = ({ config, onSave, saving }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'phone') {
+      // Filtrar letras: permitir solo números, +, -, espacios
+      const filtered = value.replace(/[^0-9+\-\s]/g, '');
+      setFormData((prev) => ({ ...prev, [name]: filtered }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validación de correo electrónico obligatoria
+    if (!formData.email || !formData.email.includes('@')) {
+      addNotification('El correo electrónico institucional debe contener el carácter "@" obligatoriamente.', 'error');
+      return;
+    }
+
     onSave(formData);
   };
 
@@ -109,7 +126,7 @@ export const InstitutionalSettings = ({ config, onSave, saving }) => {
 
       <Card>
         <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.05rem' }}>Máxima Autoridad</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem 1.5rem' }}>
           <Input
             label="Nombre Completo"
             name="maxAuthority"
@@ -124,9 +141,23 @@ export const InstitutionalSettings = ({ config, onSave, saving }) => {
             onChange={handleChange}
             disabled
           />
+          <Input
+            label="Acta / Resolución de Nombramiento (Nro. y fecha)"
+            name="maxAuthorityAppointment"
+            value={formData.maxAuthorityAppointment || ''}
+            onChange={handleChange}
+            placeholder="Ej: Resolución Nro. XXX-XX de fecha XX/XX/XXXX"
+          />
+          <Input
+            label="Publicación en Gaceta (Nro. y fecha)"
+            name="maxAuthorityGazette"
+            value={formData.maxAuthorityGazette || ''}
+            onChange={handleChange}
+            placeholder="Ej: Gaceta Municipal Nro. XXX de fecha XX/XX/XXXX"
+          />
         </div>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.5rem 0 0 0', fontStyle: 'italic' }}>
-          Este campo se vincula automáticamente al usuario con rol de Contralor Municipal registrado en el sistema.
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.75rem 0 0 0', fontStyle: 'italic' }}>
+          Los campos de Nombre y Cargo se vinculan automáticamente al usuario con rol de Contralor Municipal registrado en el sistema.
         </p>
       </Card>
 

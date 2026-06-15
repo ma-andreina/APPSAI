@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Home,
   CalendarDays,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 
 export const Sidebar = () => {
+  const { logout } = useAuth();
   const menuItems = [
     { name: 'Dashboard', icon: <Home size={20} />, path: '/' },
     { name: 'Planificación', icon: <CalendarDays size={20} />, path: '/planning' },
@@ -59,14 +61,12 @@ export const Sidebar = () => {
           flexShrink: 0
         }}>
           <img
-            src="/image.webp"
+            src="/logo_cmp.svg"
             alt="CMP Logo"
             style={{
-              minWidth: '400%',
-              minHeight: '400%',
-              objectFit: 'contain',
-              objectPosition: 'center',
-              transform: 'translate(5%, 5%)'
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
             }}
           />
         </div>
@@ -114,8 +114,12 @@ export const Sidebar = () => {
           width: '100%',
           padding: '10px 16px',
           borderRadius: 'var(--radius-button)',
-          transition: 'all 0.2s'
+          transition: 'all 0.2s',
+          cursor: 'pointer',
+          border: 'none',
+          backgroundColor: 'transparent'
         }}
+          onClick={logout}
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
         >

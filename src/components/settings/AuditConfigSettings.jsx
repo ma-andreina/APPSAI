@@ -132,7 +132,7 @@ export const AuditConfigSettings = ({ config, onSave, saving }) => {
                   — {scale.label}
                 </span>
               </div>
-              <Badge status={scale.key === 'Cumple' ? 'closed' : scale.key === 'Parcial' ? 'review' : 'critical'}>
+              <Badge status={scale.key === 'Cumple' ? 'closed' : (scale.key === 'N/A' ? 'default' : 'critical')}>
                 {scale.key}
               </Badge>
             </div>

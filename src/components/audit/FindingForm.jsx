@@ -13,6 +13,7 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
   });
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState([]);
+  const fileInputRef = React.useRef(null);
 
   // Si initialData cambia (ej: se abre modal con otro control), actualizamos el form
   React.useEffect(() => {
@@ -36,8 +37,21 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(e.dataTransfer.files).map(file => file.name);
-      setFiles([...files, ...newFiles]);
+      const newFiles = Array.from(e.dataTransfer.files);
+      setFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const triggerFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -155,10 +169,18 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
       {/* Evidencias (Drag & Drop) */}
       <div style={fieldStyle}>
         <label style={labelStyle}>Evidencias Respaldo</label>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+          multiple 
+          style={{ display: 'none' }} 
+        />
         <div 
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onClick={triggerFileSelect}
           style={{
             border: `2px dashed ${isDragging ? 'var(--brand-accent)' : 'var(--border-light)'}`,
             borderRadius: 'var(--radius-card)',
@@ -170,14 +192,14 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
           }}
         >
           <UploadCloud size={40} color={isDragging ? 'var(--brand-accent)' : 'var(--text-secondary)'} style={{ marginBottom: '1rem' }} />
-          <p style={{ margin: '0 0 0.5rem 0', fontWeight: '500' }}>Arrastra y suelta tus archivos aquí</p>
+          <p style={{ margin: '0 0 0.5rem 0', fontWeight: '500' }}>Arrastra y suelta tus archivos aquí, o haz clic para seleccionar</p>
           <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>PDF, JPG, PNG (Max 10MB)</p>
           
           {files.length > 0 && (
-            <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+            <div style={{ marginTop: '1.5rem', textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
               <strong style={{ fontSize: '0.85rem' }}>Archivos adjuntos:</strong>
               <ul style={{ paddingLeft: '1.5rem', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--brand-accent)' }}>
-                {files.map((file, idx) => <li key={idx}>{file}</li>)}
+                {files.map((file, idx) => <li key={idx}>{file.name}</li>)}
               </ul>
             </div>
           )}

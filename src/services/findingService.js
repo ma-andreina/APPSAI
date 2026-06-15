@@ -1,26 +1,90 @@
+import { db } from './firebaseConfig';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { mockFindings } from './mockData';
 
+// Determinar si Firebase está configurado para pruebas reales
+const isFirebaseConfigured = !!import.meta.env.VITE_FIREBASE_API_KEY;
+
+// Fallback local en memoria para desarrollo
 let currentFindings = [...mockFindings];
 
 export const findingService = {
+  /**
+   * Obtiene todos los hallazgos registrados.
+   * @returns {Promise<Array>} Listado de hallazgos.
+   */
   getAll: async () => {
-    return new Promise(resolve => {
-      setTimeout(() => resolve([...currentFindings]), 400);
-    });
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve([...currentFindings]), 250);
+      });
+    }
+
+    try {
+      const querySnapshot = await getDocs(collection(db, 'findings'));
+      const list = [];
+      querySnapshot.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      return list;
+    } catch (error) {
+      console.error('Error al recuperar hallazgos de Firestore, usando cache local:', error);
+      return [...currentFindings];
+    }
   },
 
+  /**
+   * Crea y registra un hallazgo estructurado (CCCE).
+   * La escritura es resiliente y se guarda localmente si no hay red.
+   * @param {object} findingData Datos del hallazgo.
+   * @returns {Promise<object>} El hallazgo creado con su ID correspondiente.
+   */
   create: async (findingData) => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const newFinding = {
-          id: `HALL-${String(currentFindings.length + 1).padStart(3, '0')}`,
-          status: 'Abierto',
-          createdAt: new Date().toISOString(),
-          ...findingData
-        };
-        currentFindings = [newFinding, ...currentFindings];
-        resolve(newFinding);
-      }, 600);
-    });
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const newFinding = {
+            id: `HALL-${String(currentFindings.length + 1).padStart(3, '0')}`,
+            status: 'Abierto',
+            createdAt: new Date().toISOString(),
+            ...findingData
+          };
+          currentFindings = [newFinding, ...currentFindings];
+          resolve(newFinding);
+        }, 300);
+      });
+    }
+
+    try {
+      // Usar un nuevo ID autogenerado por Firestore
+      const newDocRef = doc(collection(db, 'findings'));
+      
+      const newFinding = {
+        auditId: findingData.auditId || 'AUD-ACTIVE',
+        controlId: findingData.controlId || '',
+        title: findingData.title || `Desviación Control A.${findingData.controlId}`,
+        status: 'Abierto',
+        severity: findingData.severity || 'Medio',
+        ccce: {
+          condition: findingData.condition || '',
+          criterion: findingData.criterion || '',
+          cause: findingData.cause || '',
+          effect: findingData.effect || ''
+        },
+        evidenceFiles: findingData.evidenceFiles || [], // [{ fileName, fileUrl, sha256, uploadedAt }]
+        createdAt: new Date().toISOString()
+      };
+
+      // Guardar de inmediato en la caché local IndexedDB
+      await setDoc(newDocRef, newFinding);
+
+      return {
+        id: newDocRef.id,
+        ...newFinding
+      };
+    } catch (error) {
+      console.error('Error al crear hallazgo en Firestore:', error);
+      throw error;
+    }
   }
 };

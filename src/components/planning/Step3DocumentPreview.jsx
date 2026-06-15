@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
-import { QrCode, Lock, ArrowLeft, X } from 'lucide-react';
+import { QrCode, Lock, ArrowLeft } from 'lucide-react';
+import { InstitutionalDocumentLayout } from '../document/InstitutionalDocumentLayout';
 
 export const Step3DocumentPreview = ({ generalData, teamData, updateGeneralData, onSignAndGenerate, onCancel, isPreviewOnly = false }) => {
   const [isSigned, setIsSigned] = useState(false);
@@ -56,33 +57,15 @@ export const Step3DocumentPreview = ({ generalData, teamData, updateGeneralData,
         </div>
       )}
 
-      {/* Lienzo tipo Papel */}
-      <div style={{
-        width: '100%',
-        maxWidth: '850px',
-        backgroundColor: 'white',
-        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-        padding: '4rem',
-        color: '#000',
-        fontFamily: '"Times New Roman", Times, serif',
-        lineHeight: '1.6',
-        fontSize: '11pt',
-        position: 'relative'
-      }}>
+      {/* Lienzo tipo Papel con el Layout Institucional */}
+      <InstitutionalDocumentLayout isScreen={true}>
         {/* Marca de Agua / Sello si está firmado */}
         {isSigned && (
-          <div style={{ position: 'absolute', top: '2rem', right: '3rem', opacity: 0.8, textAlign: 'center' }}>
+          <div style={{ position: 'absolute', top: '2rem', right: '3rem', opacity: 0.8, textAlign: 'center', zIndex: 10 }}>
             <QrCode size={80} color="var(--brand-primary)" />
             <div style={{ fontSize: '0.6rem', marginTop: '0.25rem', fontFamily: 'monospace' }}>DOC-VALID-SAI</div>
           </div>
         )}
-
-        {/* Encabezado */}
-        <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '3rem' }}>
-          REPÚBLICA BOLIVARIANA DE VENEZUELA<br />
-          CONTRALORÍA DEL MUNICIPIO PEDRAZA DEL ESTADO BARINAS<br />
-          DIRECCIÓN DE CONTROL DE LA ADMINISTRACIÓN CENTRAL Y DESCENTRALIZADA
-        </div>
 
         {/* Destinatario */}
         <div style={{ marginBottom: '2rem' }}>
@@ -146,7 +129,7 @@ export const Step3DocumentPreview = ({ generalData, teamData, updateGeneralData,
                 border: '1px dashed rgba(255, 235, 59, 0.8)',
                 backgroundColor: 'rgba(255, 235, 59, 0.1)',
                 color: '#000',
-                fontFamily: '"Times New Roman", Times, serif',
+                fontFamily: 'Arial, Helvetica, sans-serif',
                 fontSize: '11pt',
                 resize: 'vertical',
                 padding: '0.5rem',
@@ -169,8 +152,7 @@ export const Step3DocumentPreview = ({ generalData, teamData, updateGeneralData,
           NOMBRES Y APELLIDOS<br />
           Contralor Municipal
         </div>
-
-      </div>
+      </InstitutionalDocumentLayout>
     </div>
   );
 };

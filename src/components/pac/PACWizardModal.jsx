@@ -105,9 +105,9 @@ export const PACWizardModal = ({ isOpen, onClose, auditId }) => {
             
             {/* Stepper Header */}
             <div style={{ display: 'flex', borderBottom: '1px solid var(--border-light)', marginBottom: '1.5rem', paddingBottom: '1rem' }}>
-              <StepIndicator step={1} currentStep={currentStep} label="1. Datos Base" />
-              <StepIndicator step={2} currentStep={currentStep} label="2. Carga del Plan" />
-              <StepIndicator step={3} currentStep={currentStep} label="3. Validación y Firmas" />
+              <StepIndicator step={1} currentStep={currentStep} label="Datos Base" />
+              <StepIndicator step={2} currentStep={currentStep} label="Carga del Plan" />
+              <StepIndicator step={3} currentStep={currentStep} label="Validación y Firmas" />
             </div>
 
             {/* Step Content */}

@@ -10,7 +10,16 @@ const getPersistedConfig = () => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    // Invalidar si tiene el RIF o email anterior, o si las escalas no tienen N/A (menos de 3)
+    if (parsed && (
+      (parsed.institutional && (parsed.institutional.rif !== 'G-20002278-7' || parsed.institutional.email !== 'Contraloría_Pedraza@hotmail.com')) ||
+      (parsed.audit && parsed.audit.isoScales && parsed.audit.isoScales.length < 3)
+    )) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
