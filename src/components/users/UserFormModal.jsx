@@ -28,6 +28,8 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
       setFormData({
         name: initialData.name || '',
         email: initialData.email || '',
+        password: '',
+        confirmPassword: '',
         role: initialData.role || 'Auditor',
         status: initialData.status || 'Activo',
         twoFactorEnabled: initialData.twoFactorEnabled || false
@@ -37,6 +39,7 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
         name: '',
         email: '',
         password: '',
+        confirmPassword: '',
         role: 'Auditor',
         status: 'Activo',
         twoFactorEnabled: false
@@ -54,6 +57,29 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    const { password, confirmPassword } = formData;
+    const isPasswordFilled = password && password.length > 0;
+
+    if (!isEditing || isPasswordFilled) {
+      if (!password || password.length < 6) {
+        alert("La contraseña debe tener al menos 6 caracteres.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Las contraseñas no coinciden. Por favor, verifícalas.");
+        return;
+      }
+
+      // Exigir: letras minúsculas, mayúsculas, números y al menos un signo o símbolo especial
+      const complexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':",.<>\/?\\|~]).{6,}$/;
+      if (!complexityRegex.test(password)) {
+        alert("La contraseña debe incluir:\n- Al menos 6 caracteres\n- Letras minúsculas\n- Letras mayúsculas\n- Números\n- Al menos un signo o símbolo especial (ej. !, @, #, $, etc.)");
+        return;
+      }
+    }
+
     onSubmit(formData);
   };
 
@@ -107,18 +133,32 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
           />
         </div>
 
-        {!isEditing && (
+        <div>
+          <label style={labelStyle}>
+            {isEditing ? 'Nueva Contraseña (Dejar en blanco para no cambiar)' : 'Contraseña de Acceso'}
+          </label>
+          <input 
+            type="password" 
+            name="password" 
+            value={formData.password || ''} 
+            onChange={handleChange} 
+            style={inputStyle} 
+            required={!isEditing} 
+            placeholder={isEditing ? 'Opcional (letras, mayúscula, números y signo)' : 'Mínimo 6 caracteres (letras, mayúscula, números y signo)'}
+          />
+        </div>
+
+        {(!isEditing || isPasswordFilled) && (
           <div>
-            <label style={labelStyle}>Contraseña Inicial de Acceso</label>
+            <label style={labelStyle}>Confirmar Contraseña</label>
             <input 
               type="password" 
-              name="password" 
-              value={formData.password || ''} 
+              name="confirmPassword" 
+              value={formData.confirmPassword || ''} 
               onChange={handleChange} 
               style={inputStyle} 
               required 
-              placeholder="Mínimo 6 caracteres"
-              minLength={6}
+              placeholder="Escribe la contraseña nuevamente"
             />
           </div>
         )}

@@ -120,7 +120,18 @@ export const AuthProvider = ({ children }) => {
                   user.tempPassword = null;
                 }
               } catch (createErr) {
-                throw new Error('Error al registrar usuario en la base de seguridad');
+                if (createErr.code === 'auth/email-already-in-use') {
+                  // Si ya existe en Firebase Auth pero el admin la restableció en Firestore,
+                  // permitimos continuar con inicio de sesión local para el demo/pruebas.
+                  console.log("Inicio de sesión local por restablecimiento de contraseña.");
+                  if (user.tempPassword) {
+                    const userRef = doc(db, 'users', user.id);
+                    await updateDoc(userRef, { tempPassword: null });
+                    user.tempPassword = null;
+                  }
+                } else {
+                  throw new Error('Error al registrar usuario en la base de seguridad');
+                }
               }
             } else {
               throw new Error('Credenciales inválidas');

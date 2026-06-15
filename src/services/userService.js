@@ -178,10 +178,23 @@ export const userService = {
   },
 
   updateUser: async (id, userData) => {
+    const { password, confirmPassword, ...otherData } = userData;
+    const updatePayload = {
+      ...otherData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    if (password && password.length > 0) {
+      updatePayload.tempPassword = password;
+    }
+
     if (!isFirebaseConfigured) {
       const index = localUsers.findIndex(u => u.id === id);
       if (index !== -1) {
-        localUsers[index] = { ...localUsers[index], ...userData };
+        localUsers[index] = { ...localUsers[index], ...updatePayload };
+        if (password) {
+          localUsers[index].password = password;
+        }
         return localUsers[index];
       }
       return null;
@@ -189,10 +202,7 @@ export const userService = {
 
     try {
       const docRef = doc(db, 'users', id);
-      await updateDoc(docRef, {
-        ...userData,
-        updatedAt: new Date().toISOString()
-      });
+      await updateDoc(docRef, updatePayload);
       const docSnap = await getDoc(docRef);
       return { id, ...docSnap.data() };
     } catch (error) {
