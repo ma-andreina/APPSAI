@@ -23,7 +23,7 @@ export const MainLayout = ({ children }) => {
       <div className="main-content" style={{ flex: 1, marginLeft: 'var(--sidebar-width)', display: 'flex', flexDirection: 'column', transition: 'margin-left 0.3s ease' }}>
         <Header user={user} onToggleSidebar={toggleSidebar} />
         
-        <main style={{ 
+        <main className="app-main" style={{ 
           flex: 1, 
           padding: '2rem', 
           maxWidth: '1600px', 

@@ -76,10 +76,10 @@ export const Dashboard = () => {
       <div className="dashboard-stats" style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem', flexShrink: 0 }}>
         
         {/* Card de Cumplimiento */}
-        <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1.5rem' }}>
-          <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', alignSelf: 'flex-start' }}>Avance Global (ISO 27001)</h3>
+        <Card className="donut-card-mobile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1.5rem' }}>
+          <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', alignSelf: 'flex-start', width: '100%' }}>Avance Global (ISO 27001)</h3>
           <DonutChart percentage={avgProgress} color="var(--brand-accent)" />
-          <p style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
+          <p className="donut-text-mobile" style={{ marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
             Promedio de implementación de controles en las instituciones auditadas.
           </p>
         </Card>
@@ -87,7 +87,7 @@ export const Dashboard = () => {
         {/* Card de Resumen de Proyectos */}
         <Card>
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem' }}>Resumen</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="summary-grid-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             
             <div style={{ backgroundColor: 'var(--surface-light)', padding: '1rem', borderRadius: 'var(--radius-button)' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Total</span>
@@ -96,7 +96,7 @@ export const Dashboard = () => {
               </div>
             </div>
 
-            <div style={{ backgroundColor: 'var(--surface-light)', padding: '1rem', borderRadius: 'var(--radius-button)' }}>
+            <div className="hide-on-mobile" style={{ backgroundColor: 'var(--surface-light)', padding: '1rem', borderRadius: 'var(--radius-button)' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Completados</span>
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--status-closed)', marginTop: '0.25rem' }}>
                 {completedAudits}

@@ -52,22 +52,25 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
           padding: '1.25rem',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'flex-start',
+          gap: '1rem',
           cursor: 'pointer',
           backgroundColor: isOpen ? 'var(--surface-hover)' : 'transparent'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', flex: 1 }}>
           {/* Círculo Rojo para Pendientes */}
           <div style={{ 
             width: '12px', 
             height: '12px', 
             borderRadius: '50%', 
-            backgroundColor: isPending ? 'var(--status-critical)' : getStatusColor(localStatus)
+            backgroundColor: isPending ? 'var(--status-critical)' : getStatusColor(localStatus),
+            flexShrink: 0,
+            marginTop: '4px'
           }} title={isPending ? 'Pendiente por evaluar' : 'Evaluado'} />
           
-          <div>
-            <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)', whiteSpace: 'normal', wordBreak: 'break-word', lineHeight: '1.4' }}>
               A.{control.id} {control.title}
             </h4>
           </div>

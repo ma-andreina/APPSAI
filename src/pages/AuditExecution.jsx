@@ -102,16 +102,16 @@ export const AuditExecution = () => {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1rem' }}>
+      <div style={{ maxWidth: '1000px', width: '100%', margin: '0 auto', padding: '1rem', boxSizing: 'border-box' }}>
         {/* Header Skeleton */}
         <div style={{ marginBottom: '2rem' }}>
-          <div className="skeleton" style={{ height: '32px', width: '300px', marginBottom: '0.75rem', borderRadius: '4px' }} />
-          <div className="skeleton" style={{ height: '18px', width: '450px', marginBottom: '1.5rem', borderRadius: '4px' }} />
+          <div className="skeleton" style={{ height: '32px', width: '300px', maxWidth: '100%', marginBottom: '0.75rem', borderRadius: '4px' }} />
+          <div className="skeleton" style={{ height: '18px', width: '450px', maxWidth: '100%', marginBottom: '1.5rem', borderRadius: '4px' }} />
           
           {/* Progress Card Skeleton */}
           <div style={{ padding: '1.5rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-card)', backgroundColor: 'var(--surface-card)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <div className="skeleton" style={{ height: '18px', width: '150px', borderRadius: '4px' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div className="skeleton" style={{ height: '18px', width: '150px', maxWidth: '100%', borderRadius: '4px' }} />
               <div className="skeleton" style={{ height: '18px', width: '80px', borderRadius: '4px' }} />
             </div>
             <div className="skeleton" style={{ height: '8px', width: '100%', borderRadius: '4px' }} />
@@ -119,21 +119,21 @@ export const AuditExecution = () => {
         </div>
 
         {/* Tabs Skeleton */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="skeleton" style={{ height: '40px', width: '120px', borderRadius: 'var(--radius-full)' }} />
+            <div key={i} className="skeleton" style={{ height: '40px', width: '120px', flexShrink: 0, borderRadius: 'var(--radius-full)' }} />
           ))}
         </div>
 
         {/* Accordions Skeleton */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ padding: '1.25rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-card)', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div className="skeleton" style={{ width: '12px', height: '12px', borderRadius: '50%' }} />
-                <div className="skeleton" style={{ height: '20px', width: '300px', borderRadius: '4px' }} />
+            <div key={i} style={{ padding: '1.25rem', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-card)', minHeight: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                <div className="skeleton" style={{ width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0 }} />
+                <div className="skeleton" style={{ height: '20px', width: '300px', maxWidth: '100%', borderRadius: '4px' }} />
               </div>
-              <div className="skeleton" style={{ height: '20px', width: '50px', borderRadius: '4px' }} />
+              <div className="skeleton" style={{ height: '20px', width: '50px', flexShrink: 0, borderRadius: '4px' }} />
             </div>
           ))}
         </div>
@@ -168,13 +168,13 @@ export const AuditExecution = () => {
   const visibleControls = controls.filter(c => c.category === activeCategory);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
       
       {/* Cabecera y Progreso Global */}
       <div style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <h1 style={{ margin: '0 0 0.5rem 0' }}>Ejecución ISO 27001:2022</h1>
+            <h1 style={{ margin: '0 0 0.5rem 0', fontSize: 'var(--font-size-h1)' }}>Ejecución ISO 27001:2022</h1>
             <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
               Auditoría activa: Evaluación de Seguridad BD (Alcaldía de Pedraza)
             </p>

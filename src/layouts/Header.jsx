@@ -40,7 +40,7 @@ export const Header = ({ user, onToggleSidebar }) => {
   };
 
   return (
-    <header style={{
+    <header className="app-header" style={{
       height: '80px',
       backgroundColor: 'var(--surface-light)',
       display: 'flex',

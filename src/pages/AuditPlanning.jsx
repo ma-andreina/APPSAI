@@ -89,15 +89,15 @@ export const AuditPlanning = () => {
   // Vista Inicial (Start Screen)
   if (!isWizardActive) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', minHeight: '60vh', textAlign: 'center' }}>
-        <FileText size={64} color="var(--brand-accent)" style={{ marginBottom: '1.5rem', opacity: 0.8 }} />
-        <h1 style={{ marginBottom: '1rem' }}>Planificación de Auditorías</h1>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '500px', marginBottom: '2rem', lineHeight: '1.6' }}>
+      <div className="planning-start-screen" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', flex: 1, minHeight: '60vh', textAlign: 'center', margin: '0 auto' }}>
+        <FileText size={64} color="var(--brand-accent)" style={{ marginBottom: '1.5rem', opacity: 0.8, flexShrink: 0 }} />
+        <h1 style={{ marginBottom: '1rem', fontSize: 'var(--font-size-h1)', whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '100%' }}>Planificación de Auditorías</h1>
+        <p className="planning-desc" style={{ color: 'var(--text-secondary)', maxWidth: '500px', marginBottom: '2rem', lineHeight: '1.6', whiteSpace: 'normal', wordBreak: 'break-word' }}>
           Desde este módulo podrás iniciar nuevas actuaciones fiscales, conformar las comisiones de trabajo y generar los oficios de presentación con firma electrónica.
         </p>
-        <Button variant="primary" onClick={() => setIsWizardActive(true)} style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-          <Plus size={20} style={{ marginRight: '8px' }} />
-          Iniciar Nueva Actuación
+        <Button className="planning-btn" variant="primary" onClick={() => setIsWizardActive(true)} style={{ padding: '1rem 2rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Plus size={20} style={{ marginRight: '8px', flexShrink: 0 }} />
+          <span>Iniciar Nueva Actuación</span>
         </Button>
       </div>
     );

@@ -21,7 +21,8 @@ export const Tabs = ({ tabs, activeTab, onTabChange }) => {
               transition: 'all 0.2s ease',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              flexShrink: 0
             }}
           >
             {tab.label}
