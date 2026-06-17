@@ -9,7 +9,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
   const toggleMaximize = () => setIsMaximized(!isMaximized);
 
   return (
-    <div style={{
+    <div className="modal-overlay" style={{
       position: 'fixed',
       top: 0,
       left: 0,
@@ -22,7 +22,7 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
       zIndex: 1000,
       padding: isMaximized ? '0' : '2rem'
     }}>
-      <div style={{
+      <div className="modal-content" style={{
         backgroundColor: 'var(--surface-card)',
         borderRadius: isMaximized ? '0' : 'var(--radius-card)',
         width: isMaximized ? '100%' : '800px',

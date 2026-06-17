@@ -5,13 +5,23 @@ import { useAuth } from '../context/AuthContext';
 
 export const MainLayout = ({ children }) => {
   const { currentUser: user } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--surface-light)' }}>
-      <Sidebar />
+      {/* Overlay Backdrop para el menú en móvil */}
+      <div 
+        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`} 
+        onClick={closeSidebar}
+      />
+
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
       
-      <div style={{ flex: 1, marginLeft: '260px', display: 'flex', flexDirection: 'column' }}>
-        <Header user={user} />
+      <div className="main-content" style={{ flex: 1, marginLeft: 'var(--sidebar-width)', display: 'flex', flexDirection: 'column', transition: 'margin-left 0.3s ease' }}>
+        <Header user={user} onToggleSidebar={toggleSidebar} />
         
         <main style={{ 
           flex: 1, 

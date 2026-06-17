@@ -60,7 +60,7 @@ export const findingService = {
       const newDocRef = doc(collection(db, 'findings'));
       
       const newFinding = {
-        auditId: findingData.auditId || 'AUD-ACTIVE',
+        auditId: findingData.auditId || 'AUD-SEC-2026',
         controlId: findingData.controlId || '',
         title: findingData.title || `Desviación Control A.${findingData.controlId}`,
         status: 'Abierto',

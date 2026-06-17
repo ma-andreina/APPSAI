@@ -27,7 +27,7 @@ export const Findings = () => {
   const handleCreateFinding = async (formData) => {
     setIsModalOpen(false);
     // Para simplificar la demo, inyectamos auditId dummy
-    await findingService.create({ ...formData, auditId: 'AUD-ACTIVE', criterion: `Control ISO 27001: ${formData.criterion}` });
+    await findingService.create({ ...formData, auditId: 'AUD-SEC-2026', criterion: `Control ISO 27001: ${formData.criterion}` });
     addNotification('Hallazgo registrado exitosamente', 'success');
     loadFindings();
   };

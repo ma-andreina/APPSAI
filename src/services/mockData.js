@@ -78,8 +78,8 @@ export const mockChecklist = [
     category: 'Organizacionales',
     title: 'Roles y responsabilidades en seguridad de la información',
     description: 'Todas las responsabilidades de seguridad de la información deben ser definidas y asignadas de acuerdo con las necesidades de la organización.',
-    status: 'Cumple',
-    observations: 'Definidos en el manual de organización.'
+    status: null,
+    observations: ''
   },
   {
     id: '5.3',
@@ -438,8 +438,8 @@ export const mockChecklist = [
     category: 'Físicos',
     title: 'Perímetro de seguridad física',
     description: 'Los perímetros de seguridad deben definirse y utilizarse para proteger áreas que contienen información y otros activos asociados.',
-    status: 'No cumple',
-    observations: 'Falta control de acceso biométrico en el servidor central.'
+    status: null,
+    observations: ''
   },
   {
     id: '7.2',

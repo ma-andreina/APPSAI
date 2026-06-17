@@ -2,7 +2,7 @@ import React from 'react';
 
 export const KanbanBoard = ({ children }) => {
   return (
-    <div style={{
+    <div className="kanban-board" style={{
       display: 'flex',
       gap: '1.5rem',
       overflowX: 'auto',

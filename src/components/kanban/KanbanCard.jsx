@@ -26,6 +26,7 @@ export const KanbanCard = ({ audit, onClick }) => {
           {teamUsers.map((user, idx) => (
             <Avatar 
               key={user.id} 
+              name={user.name}
               initials={user.avatar} 
               size={28} 
               style={{ 

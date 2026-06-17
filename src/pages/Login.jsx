@@ -10,13 +10,17 @@ import { Shield, Lock, Mail, KeyRound, ChevronDown, ArrowLeft, Eye, EyeOff } fro
  * Incluye selector rápido de usuario para demo.
  */
 export const Login = () => {
-  const { login, verify2FA, cancel2FA, quickLogin, authStep, loading, error, setError, pendingUser } = useAuth();
+  const { login, verify2FA, cancel2FA, quickLogin, resetPassword, authStep, loading, error, setError, pendingUser } = useAuth();
 
   // Form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
+
+  // Forgot Password
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   // Quick login
   const [showQuickLogin, setShowQuickLogin] = useState(false);
@@ -59,6 +63,21 @@ export const Login = () => {
 
   const handleQuickLogin = (userId) => {
     quickLogin(userId);
+  };
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (!email) {
+      setError('Por favor, ingrese su correo electrónico.');
+      return;
+    }
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+    } catch {
+      // Error manejado en AuthContext
+    }
   };
 
   const handle2FAInput = (e) => {
@@ -229,7 +248,7 @@ export const Login = () => {
           )}
 
           {/* STEP 1: Credentials */}
-          {authStep !== '2fa' && (
+          {authStep !== '2fa' && !showForgotPassword && (
             <form onSubmit={handleLoginSubmit}>
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <Lock size={24} color="rgba(255,255,255,0.5)" style={{ marginBottom: '0.5rem' }} />
@@ -306,6 +325,29 @@ export const Login = () => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(true);
+                      setError('');
+                      setResetSent(false);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'rgba(74,144,217,0.8)',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      padding: 0,
+                      fontFamily: 'inherit'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#4A90D9'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(74,144,217,0.8)'}
+                  >
+                    ¿Olvidó su contraseña?
+                  </button>
+                </div>
               </div>
 
               {/* Error */}
@@ -360,6 +402,60 @@ export const Login = () => {
                   'Acceder al Sistema'
                 )}
               </button>
+            </form>
+          )}
+
+          {/* Forgot Password View */}
+          {showForgotPassword && (
+            <form onSubmit={handlePasswordReset}>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'rgba(255,255,255,0.6)',
+                  fontSize: '0.85rem', marginBottom: '1.25rem', cursor: 'pointer', background: 'none',
+                  border: 'none', padding: 0, transition: 'color 0.2s', fontFamily: 'inherit'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+              >
+                <ArrowLeft size={16} />
+                Volver
+              </button>
+
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <KeyRound size={24} color="rgba(255,255,255,0.5)" style={{ marginBottom: '0.5rem' }} />
+                <h2 style={{ color: 'white', fontSize: '1.15rem', margin: '0 0 0.25rem 0' }}>Recuperar Contraseña</h2>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', margin: 0 }}>
+                  Le enviaremos un enlace de recuperación a su correo.
+                </p>
+              </div>
+
+              {resetSent ? (
+                <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem', color: '#6EE7B7', fontSize: '0.85rem', textAlign: 'center' }}>
+                  Enlace enviado. Revise su bandeja de entrada o carpeta de spam.
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={labelStyle}>Correo Electrónico</label>
+                    <div style={inputWrapperStyle}>
+                      <Mail size={18} style={inputIconStyle} />
+                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="usuario@cmp.gob.ve" required style={inputStyle} />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div style={{ backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem', color: '#FCA5A5', fontSize: '0.85rem', textAlign: 'center' }}>
+                      {error}
+                    </div>
+                  )}
+
+                  <button type="submit" disabled={loading} style={{ width: '100%', padding: '0.85rem', borderRadius: '10px', border: 'none', backgroundColor: '#4A90D9', color: 'white', fontSize: '1rem', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: 'inherit' }}>
+                    {loading ? 'Enviando...' : 'Enviar Enlace'}
+                  </button>
+                </>
+              )}
             </form>
           )}
 

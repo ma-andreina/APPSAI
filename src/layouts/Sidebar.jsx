@@ -10,10 +10,11 @@ import {
   Users,
   Bell,
   Settings,
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react';
 
-export const Sidebar = () => {
+export const Sidebar = ({ isOpen, onClose }) => {
   const { logout } = useAuth();
   const menuItems = [
     { name: 'Dashboard', icon: <Home size={20} />, path: '/' },
@@ -28,7 +29,7 @@ export const Sidebar = () => {
   ];
 
   return (
-    <aside style={{
+    <aside className={`sidebar-drawer ${isOpen ? 'open' : ''}`} style={{
       width: '260px',
       height: '100vh',
       backgroundColor: 'var(--brand-primary)',
@@ -38,7 +39,7 @@ export const Sidebar = () => {
       position: 'fixed',
       left: 0,
       top: 0,
-      transition: 'all 0.3s ease',
+      transition: 'transform 0.3s ease',
       zIndex: 100
     }}>
       {/* Logo Area */}
@@ -74,6 +75,13 @@ export const Sidebar = () => {
           <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'white', fontWeight: 'bold' }}>SAI - CMP</h2>
           <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>Auditoría Informática</span>
         </div>
+        <button 
+          className="mobile-only-btn" 
+          onClick={onClose}
+          style={{ marginLeft: 'auto', color: 'white', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          <X size={24} />
+        </button>
       </div>
 
       {/* Navigation */}

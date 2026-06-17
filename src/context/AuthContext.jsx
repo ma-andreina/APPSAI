@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { userService } from '../services/userService';
 import { auth, db } from '../services/firebaseConfig';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserSessionPersistence, sendPasswordResetEmail, sendEmailVerification } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 
 // Crear el contexto
@@ -111,7 +111,14 @@ export const AuthProvider = ({ children }) => {
             if (password === expectedPassword) {
               try {
                 // Registrar e iniciar sesión automático
-                await createUserWithEmailAndPassword(auth, email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Enviar correo de verificación
+                try {
+                  await sendEmailVerification(userCredential.user);
+                } catch (verifyErr) {
+                  console.error('Error al enviar correo de verificación:', verifyErr);
+                }
                 
                 // Si existía una contraseña temporal, eliminarla del perfil en Firestore por seguridad
                 if (user.tempPassword) {
@@ -246,6 +253,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Enviar correo de recuperación de contraseña
+   */
+  const resetPassword = async (emailToReset) => {
+    setLoading(true);
+    setError('');
+    try {
+      if (!isFirebaseConfigured || !auth) {
+        throw new Error('La recuperación de contraseña requiere Firebase configurado.');
+      }
+      await sendPasswordResetEmail(auth, emailToReset);
+      setLoading(false);
+      return true;
+    } catch (err) {
+      setError(err.message || 'Error al enviar correo de recuperación');
+      setLoading(false);
+      throw err;
+    }
+  };
+
   const value = {
     currentUser,
     pendingUser,
@@ -255,6 +282,7 @@ export const AuthProvider = ({ children }) => {
     cancel2FA,
     logout,
     quickLogin,
+    resetPassword,
     loading,
     error,
     setError,

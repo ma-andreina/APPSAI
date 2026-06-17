@@ -3,9 +3,9 @@ import { Badge } from '../ui/Badge';
 
 export const KanbanColumn = ({ title, status, count, children }) => {
   return (
-    <div style={{
+    <div className="kanban-column" style={{
       flex: 1,
-      minWidth: '200px',
+      minWidth: '280px',
       display: 'flex',
       flexDirection: 'column',
       gap: '1rem',

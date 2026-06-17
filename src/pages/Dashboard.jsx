@@ -49,7 +49,7 @@ export const Dashboard = () => {
   }
 
   return (
-    <div style={{ display: 'flex', gap: '2rem', height: '100%' }}>
+    <div className="dashboard-layout" style={{ display: 'flex', gap: '2rem', height: '100%' }}>
       {/* Zona Central: Kanban */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -73,7 +73,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Panel Lateral: Estadísticas */}
-      <div style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem', flexShrink: 0 }}>
+      <div className="dashboard-stats" style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1.5rem', flexShrink: 0 }}>
         
         {/* Card de Cumplimiento */}
         <Card style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '2rem 1.5rem' }}>

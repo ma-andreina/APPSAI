@@ -46,7 +46,7 @@ export const AuditExecution = () => {
 
   useEffect(() => {
     // Cargar el checklist de la auditoría activa
-    checklistService.getChecklistForAudit('AUD-ACTIVE').then(data => {
+    checklistService.getChecklistForAudit('AUD-SEC-2026').then(data => {
       setControls(data);
       setLoading(false);
     });
@@ -54,7 +54,7 @@ export const AuditExecution = () => {
 
   const handleUpdateControl = async (id, updateData) => {
     // Autoguardado: llamamos al servicio y actualizamos el estado local
-    await checklistService.updateControl('AUD-ACTIVE', id, updateData);
+    await checklistService.updateControl('AUD-SEC-2026', id, updateData);
     setControls(prev => prev.map(c => c.id === id ? { ...c, ...updateData } : c));
   };
 
@@ -74,7 +74,7 @@ export const AuditExecution = () => {
         try {
           const evidenceMeta = await storageService.uploadEvidence(
             fileObj,
-            'AUD-ACTIVE',
+            'AUD-SEC-2026',
             selectedControlForFinding.id
           );
           uploadedEvidences.push(evidenceMeta);
@@ -89,7 +89,7 @@ export const AuditExecution = () => {
       await findingService.create({
         ...formData,
         evidenceFiles: uploadedEvidences,
-        auditId: 'AUD-ACTIVE',
+        auditId: 'AUD-SEC-2026',
         controlId: selectedControlForFinding.id,
         title: `Desviación en Control A.${selectedControlForFinding.id}`
       });
@@ -180,22 +180,7 @@ export const AuditExecution = () => {
             </p>
           </div>
           
-          {/* Indicador de Estado de Conexión/Sincronización */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '6px 12px',
-            borderRadius: 'var(--radius-full)',
-            backgroundColor: !isFirebaseConfigured ? '#3B82F61A' : isOnline ? '#10B9811A' : '#F5A6231A',
-            color: !isFirebaseConfigured ? '#3B82F6' : isOnline ? '#10B981' : '#F5A623',
-            border: `1px solid ${!isFirebaseConfigured ? '#3B82F64D' : isOnline ? '#10B9814D' : '#F5A6234D'}`,
-            fontSize: '0.85rem',
-            fontWeight: 600
-          }}>
-            {!isFirebaseConfigured ? <Database size={14} /> : isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
-            {!isFirebaseConfigured ? 'Simulación (Local)' : isOnline ? 'Conectado (Servidor)' : 'Sin Conexión (Caché Local)'}
-          </div>
+
         </div>
 
         <Card style={{ padding: '1.5rem' }}>

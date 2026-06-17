@@ -6,8 +6,11 @@ import { Button } from '../components/ui/Button';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Plus, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 export const UserManagement = () => {
+  const { currentUser } = useAuth();
+  const isContralor = currentUser?.role === 'Contralor Municipal';
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,14 +96,16 @@ export const UserManagement = () => {
           <div>
             <h1 style={{ margin: '0 0 0.25rem 0', fontSize: '1.5rem' }}>Gestión de Usuarios y Roles</h1>
             <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-              Control de acceso (RBAC) y administración de credenciales (2FA).
+              Control de acceso (RBAC)
             </p>
           </div>
         </div>
-        <Button variant="primary" onClick={() => handleOpenModal()} style={{ gap: '8px' }}>
-          <Plus size={18} />
-          Nuevo Usuario
-        </Button>
+        {isContralor && (
+          <Button variant="primary" onClick={() => handleOpenModal()} style={{ gap: '8px' }}>
+            <Plus size={18} />
+            Nuevo Usuario
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -117,6 +122,7 @@ export const UserManagement = () => {
             users={users} 
             onEdit={handleOpenModal} 
             onToggleStatus={handleToggleStatus} 
+            canEdit={isContralor}
           />
         )}
       </div>

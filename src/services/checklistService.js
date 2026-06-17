@@ -40,6 +40,8 @@ export const checklistService = {
           const docRef = doc(db, 'checklists', docId);
           const newDoc = {
             ...control,
+            status: null,
+            observations: '',
             auditId,
             controlId: control.id,
             updatedAt: new Date().toISOString()
@@ -54,10 +56,18 @@ export const checklistService = {
         });
       }
 
-      // Devolver los documentos recuperados de Firestore (se extraen del cache local si está offline)
+      // Devolver los documentos recuperados de Firestore
       const list = [];
-      querySnapshot.forEach((doc) => {
-        list.push(doc.data());
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        // Si el control tiene la información predeterminada antigua, la limpiamos a la fuerza
+        if (data.observations === 'Definidos en el manual de organización.' || 
+            data.observations === 'Falta control de acceso biométrico en el servidor central.') {
+          data.status = null;
+          data.observations = '';
+          updateDoc(doc(db, 'checklists', docSnap.id), { status: null, observations: '' });
+        }
+        list.push(data);
       });
 
       return list.sort((a, b) => {

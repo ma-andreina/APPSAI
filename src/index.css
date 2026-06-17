@@ -68,3 +68,120 @@ ul {
     background-position: -200% 0;
   }
 }
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT & UTILITIES
+   ========================================================================== */
+
+/* Variables para Responsive */
+:root {
+  --sidebar-width: 260px;
+}
+
+.mobile-only-btn {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+  }
+  
+  /* Utilidades de visualización */
+  .hide-on-mobile {
+    display: none !important;
+  }
+  
+  .show-on-mobile {
+    display: block !important;
+  }
+  
+  .flex-show-on-mobile {
+    display: flex !important;
+  }
+
+  /* Dashboard y Grillas responsivas */
+  .dashboard-layout {
+    flex-direction: column !important;
+  }
+  
+  .dashboard-stats {
+    width: 100% !important;
+    order: -1; /* Mueve las estadísticas arriba */
+    margin-bottom: 1rem;
+  }
+
+  .kanban-board {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    overflow-x: hidden !important;
+  }
+  
+  .kanban-column {
+    min-width: 100% !important;
+    width: 100% !important;
+    margin-bottom: 1rem;
+  }
+
+  /* Estilos para Bottom Sheet Modal */
+  .modal-overlay {
+    align-items: flex-end !important;
+  }
+  
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90vh !important;
+    border-radius: 24px 24px 0 0 !important;
+    margin: 0 !important;
+    transform: translateY(100%);
+    animation: slideUp 0.3s forwards ease-out;
+  }
+  
+  .hide-search-input-mobile {
+    display: none !important;
+  }
+  
+  .mobile-only-btn {
+    display: block !important;
+  }
+
+  .sidebar-drawer {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-drawer.open {
+    transform: translateX(0);
+  }
+}
+
+/* Animación para el Bottom Sheet */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Sidebar Drawer Overlay */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 95;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (min-width: 769px) {
+  .sidebar-overlay {
+    display: none !important;
+  }
+}
