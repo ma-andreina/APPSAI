@@ -5,18 +5,26 @@ import { ProgressBar } from '../components/ui/ProgressBar';
 import { ChecklistAccordion } from '../components/audit/ChecklistAccordion';
 import { checklistService } from '../services/checklistService';
 import { Modal } from '../components/ui/Modal';
-import { FindingForm } from '../components/audit/FindingForm';
 import { findingService } from '../services/findingService';
 import { storageService } from '../services/storageService';
+import { auditService } from '../services/auditService';
+
 import { useAppContext } from '../context/AppContext';
-import { Wifi, WifiOff, Database } from 'lucide-react';
+import { Wifi, WifiOff, Database, Save, Search } from 'lucide-react';
+import { Button } from '../components/ui/Button';
 
 export const AuditExecution = () => {
   const [controls, setControls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Organizacionales');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [activeAudit, setActiveAudit] = useState(null);
   
+  // Load/Save Modal States
+  const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
+  const [loadCode, setLoadCode] = useState('');
+  const [searchError, setSearchError] = useState('');
+
   const isFirebaseConfigured = !!import.meta.env.VITE_FIREBASE_API_KEY;
   
   // Estados para el Modal de Hallazgos
@@ -45,16 +53,65 @@ export const AuditExecution = () => {
   }, [addNotification]);
 
   useEffect(() => {
-    // Cargar el checklist de la auditoría activa
-    checklistService.getChecklistForAudit('AUD-SEC-2026').then(data => {
-      setControls(data);
-      setLoading(false);
+    // Buscar la última auditoría creada para vincular la ejecución
+    auditService.getAll().then(audits => {
+      if (audits && audits.length > 0) {
+        // Ordenar por fecha de creación descendente para tomar la más reciente
+        const sorted = audits.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        const latest = sorted[0];
+        setActiveAudit(latest);
+        
+        checklistService.getChecklistForAudit(latest.id).then(data => {
+          setControls(data);
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
     });
   }, []);
 
+  const handleLoadAudit = async () => {
+    setSearchError('');
+    if (!loadCode.trim()) {
+      setSearchError('Por favor ingrese un código');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const audits = await auditService.getAll();
+      const foundAudit = audits.find(a => 
+        a.codigo?.toLowerCase() === loadCode.toLowerCase() || 
+        a.id.toLowerCase() === loadCode.toLowerCase()
+      );
+
+      if (foundAudit) {
+        setActiveAudit(foundAudit);
+        const data = await checklistService.getChecklistForAudit(foundAudit.id);
+        setControls(data);
+        setIsLoadModalOpen(false);
+        setLoadCode('');
+        addNotification(`Actuación ${foundAudit.codigo || foundAudit.id} cargada exitosamente`, 'success');
+      } else {
+        setSearchError('No se encontró ninguna actuación con ese código');
+      }
+    } catch (err) {
+      setSearchError('Error al buscar la actuación');
+    }
+    setLoading(false);
+  };
+
+  const handleSaveProgress = () => {
+    if (!activeAudit) return;
+    const codeToRemember = activeAudit.codigo || activeAudit.id;
+    addNotification(`Progreso guardado automáticamente. Código de acceso para retomar luego: ${codeToRemember}`, 'success');
+  };
+
   const handleUpdateControl = async (id, updateData) => {
+    if (!activeAudit) return;
     // Autoguardado: llamamos al servicio y actualizamos el estado local
-    await checklistService.updateControl('AUD-SEC-2026', id, updateData);
+    await checklistService.updateControl(activeAudit.id, id, updateData);
     setControls(prev => prev.map(c => c.id === id ? { ...c, ...updateData } : c));
   };
 
@@ -74,7 +131,7 @@ export const AuditExecution = () => {
         try {
           const evidenceMeta = await storageService.uploadEvidence(
             fileObj,
-            'AUD-SEC-2026',
+            activeAudit.id,
             selectedControlForFinding.id
           );
           uploadedEvidences.push(evidenceMeta);
@@ -89,7 +146,7 @@ export const AuditExecution = () => {
       await findingService.create({
         ...formData,
         evidenceFiles: uploadedEvidences,
-        auditId: 'AUD-SEC-2026',
+        auditId: activeAudit.id,
         controlId: selectedControlForFinding.id,
         title: `Desviación en Control A.${selectedControlForFinding.id}`
       });
@@ -176,11 +233,21 @@ export const AuditExecution = () => {
           <div>
             <h1 style={{ margin: '0 0 0.5rem 0', fontSize: 'var(--font-size-h1)' }}>Ejecución ISO 27001:2022</h1>
             <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-              Auditoría activa: Evaluación de Seguridad BD (Alcaldía de Pedraza)
+              Auditoría activa: {activeAudit ? activeAudit.title : 'Cargando...'} 
+              {activeAudit && activeAudit.codigo && ` (Código: ${activeAudit.codigo})`}
             </p>
           </div>
           
-
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Button variant="outline" onClick={() => setIsLoadModalOpen(true)}>
+              <Search size={18} style={{ marginRight: '8px' }} />
+              Cargar Actuación
+            </Button>
+            <Button variant="primary" onClick={handleSaveProgress}>
+              <Save size={18} style={{ marginRight: '8px' }} />
+              Guardar Progreso
+            </Button>
+          </div>
         </div>
 
         <Card style={{ padding: '1.5rem' }}>
@@ -235,6 +302,54 @@ export const AuditExecution = () => {
             }}
           />
         )}
+      </Modal>
+
+      {/* Modal para Cargar Actuación */}
+      <Modal
+        isOpen={isLoadModalOpen}
+        onClose={() => { setIsLoadModalOpen(false); setSearchError(''); setLoadCode(''); }}
+        title="Continuar Actuación Existente"
+      >
+        <div style={{ padding: '1rem 0' }}>
+          <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+            Ingrese el código de la actuación fiscal o el ID del sistema para cargar el progreso guardado anteriormente.
+          </p>
+          
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.875rem' }}>
+            Código de Actuación
+          </label>
+          <input
+            type="text"
+            value={loadCode}
+            onChange={(e) => { setLoadCode(e.target.value); setSearchError(''); }}
+            placeholder="Ej. ACT-2026-001 o AUD-..."
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              borderRadius: 'var(--radius-button)',
+              border: `1px solid ${searchError ? 'var(--status-critical)' : 'var(--border-light)'}`,
+              backgroundColor: 'var(--surface-light)',
+              color: 'var(--text-primary)',
+              fontFamily: 'inherit',
+              marginBottom: '0.5rem'
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleLoadAudit();
+            }}
+          />
+          {searchError && (
+            <span style={{ color: 'var(--status-critical)', fontSize: '0.85rem' }}>{searchError}</span>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
+            <Button variant="outline" onClick={() => { setIsLoadModalOpen(false); setSearchError(''); setLoadCode(''); }}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleLoadAudit}>
+              Buscar y Cargar
+            </Button>
+          </div>
+        </div>
       </Modal>
 
     </div>

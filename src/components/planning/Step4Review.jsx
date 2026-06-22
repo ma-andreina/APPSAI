@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { FileText, Activity, Download } from 'lucide-react';
+import { saveAs } from 'file-saver';
+import html2pdf from 'html2pdf.js';
 import { Step3DocumentPreview } from './Step3DocumentPreview';
 
 export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData, onSignAndGenerate }) => {
@@ -10,9 +12,23 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
   const oficioRef = useRef(null);
   const matrizRef = useRef(null);
 
-  // Buscar coordinador en el equipo para las firmas
-  const coordinador = teamData.find(m => m.cargo === 'Coordinador de Auditoría');
-  const coordinadorNombre = coordinador ? coordinador.nombre : '[No asignado]';
+  // Estado para usuarios firmantes
+  const [coordinadorNombre, setCoordinadorNombre] = useState('[Cargando...]');
+  const [directorNombre, setDirectorNombre] = useState('[Cargando...]');
+
+  useEffect(() => {
+    import('../../services/userService').then(({ userService }) => {
+      userService.getAll().then(users => {
+        const activeUsers = users.filter(u => u.status === 'Activo');
+        
+        const coord = activeUsers.find(u => u.role === 'Coordinador' || u.role?.includes('Coordinador'));
+        const dir = activeUsers.find(u => u.role === 'Director de Control');
+        
+        setCoordinadorNombre(coord ? coord.name : '[No asignado]');
+        setDirectorNombre(dir ? dir.name : '[No asignado]');
+      });
+    });
+  }, []);
 
   // Cálculos por categoría
   const calcularPorCategoria = (categoria) => {
@@ -31,39 +47,72 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
   else if (totalGeneral <= 84) nivelRiesgo = 'Tolerable';
   else nivelRiesgo = 'Inaceptable';
 
-  // Función para generar PDF usando window.print
+  // Función para generar PDF usando html2pdf.js en 1 sola página
   const handleGenerarPDF = (ref, tituloDocumento) => {
+    const elemento = ref.current;
+    if (!elemento) return;
+
+    // Calcular dimensiones exactas para que quede en 1 sola página
+    const clientWidth = elemento.scrollWidth;
+    const clientHeight = elemento.scrollHeight;
+    
+    // Convertir pixeles a milímetros (aproximadamente 25.4 mm por pulgada / 96 dpi)
+    const pxToMm = 25.4 / 96;
+    const widthMm = clientWidth * pxToMm;
+    const heightMm = clientHeight * pxToMm;
+
+    // Agregar un pequeño margen adicional
+    const format = [widthMm + 20, heightMm + 20];
+
+    const opt = {
+      margin:       10,
+      filename:     `${tituloDocumento}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: format, orientation: widthMm > heightMm ? 'landscape' : 'portrait' }
+    };
+
+    html2pdf().set(opt).from(elemento).save();
+  };
+
+  const handleGenerarDOCX = (ref, tituloDocumento) => {
     const contenido = ref.current;
     if (!contenido) return;
 
-    const ventana = window.open('', '_blank');
-    ventana.document.write(`
-      <html>
-        <head>
-          <title>${tituloDocumento}</title>
-          <style>
-            body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #000; padding: 0.5rem; }
-          </style>
-        </head>
-        <body>${contenido.innerHTML}</body>
+    // Clonar el nodo para poder manipularlo sin afectar la interfaz visual
+    const clone = contenido.cloneNode(true);
+    
+    // Eliminar todas las imágenes para que no salgan rotas en el archivo de Word
+    const images = clone.querySelectorAll('img');
+    images.forEach(img => img.remove());
+
+    const htmlString = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset="utf-8">
+        <title>${tituloDocumento}</title>
+        <style>
+          body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; }
+          table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+          .bordered-table th, .bordered-table td { border: 1px solid #000; padding: 5px; text-align: left; }
+          .signature-table td { border: none !important; text-align: center; }
+          .doc-header { text-align: center; margin-bottom: 20px; }
+          .doc-header__logo--left-wrapper { display: none; }
+          .doc-header__logo { display: none; }
+          .doc-header__center { font-weight: bold; font-size: 11pt; text-align: center; }
+          .doc-footer { margin-top: 40px; border-top: 1px solid #000; padding-top: 10px; font-size: 9pt; text-align: center; }
+        </style>
+      </head>
+      <body>
+        ${clone.innerHTML}
+      </body>
       </html>
-    `);
+    `;
 
-    // Copiar estilos de la ventana principal para que se aplique la papelería
-    const stylesheets = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
-    stylesheets.forEach(stylesheet => {
-      ventana.document.head.appendChild(stylesheet.cloneNode(true));
+    const blob = new Blob(['\\ufeff', htmlString], {
+      type: 'application/msword'
     });
-
-    ventana.document.close();
-
-    // Retardo para dar tiempo a que los estilos se apliquen
-    setTimeout(() => {
-      ventana.focus();
-      ventana.print();
-    }, 250);
+    saveAs(blob, `${tituloDocumento}.doc`);
   };
 
   const tabStyle = (tabName) => ({
@@ -130,14 +179,22 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
         
         {activeTab === 'oficio' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '1rem' }}>
+              <Button 
+                variant="outline" 
+                onClick={() => handleGenerarDOCX(oficioRef, 'Oficio_de_Presentacion')}
+                style={{ gap: '0.5rem' }}
+              >
+                <FileText size={18} />
+                Descargar en Word
+              </Button>
               <Button 
                 variant="primary" 
                 onClick={() => handleGenerarPDF(oficioRef, 'Oficio de Presentación')}
                 style={{ gap: '0.5rem' }}
               >
                 <Download size={18} />
-                Aprobar y Generar Documento
+                Descargar en PDF
               </Button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }} ref={oficioRef}>
@@ -153,14 +210,22 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
 
         {activeTab === 'matriz' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '1rem' }}>
+              <Button 
+                variant="outline" 
+                onClick={() => handleGenerarDOCX(matrizRef, 'Matriz_de_Riesgos')}
+                style={{ gap: '0.5rem' }}
+              >
+                <FileText size={18} />
+                Descargar en Word
+              </Button>
               <Button 
                 variant="primary" 
                 onClick={() => handleGenerarPDF(matrizRef, 'Matriz de Evaluación de Riesgos')}
                 style={{ gap: '0.5rem' }}
               >
                 <Download size={18} />
-                Aprobar y Generar Documento
+                Descargar en PDF
               </Button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }} ref={matrizRef}>
@@ -192,7 +257,7 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
                 </div>
 
                 {/* Tabla de Riesgos con subtotales */}
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '2rem' }}>
+                <table className="bordered-table" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '2rem' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f0f0f0' }}>
                       <th style={{ ...cellStyle, textAlign: 'left' }}>Factor de Riesgo</th>
@@ -274,18 +339,29 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
                 </div>
 
                 {/* Firmas */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', textAlign: 'center', marginTop: '4rem' }}>
-                  <div>
-                    ________________________________<br />
-                    <strong>Elaborado por:</strong><br />
-                    {coordinadorNombre}<br />
-                    Coordinador de Auditoría
-                  </div>
-                  <div>
-                    ________________________________<br />
-                    <strong>Aprobado por:</strong><br />
-                    Director de Control
-                  </div>
+                <table className="signature-table" style={{ width: '100%', marginTop: '4rem', marginBottom: '2rem', border: 'none' }}>
+                  <tbody>
+                    <tr>
+                      <td style={{ width: '50%', border: 'none', textAlign: 'center', verticalAlign: 'top' }}>
+                        ________________________________<br />
+                        <strong>Elaborado por:</strong><br />
+                        {coordinadorNombre}<br />
+                        Coordinador de Auditoría
+                      </td>
+                      <td style={{ width: '50%', border: 'none', textAlign: 'center', verticalAlign: 'top' }}>
+                        ________________________________<br />
+                        <strong>Aprobado por:</strong><br />
+                        {directorNombre}<br />
+                        Director de Control
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Footer Institucional para Matriz */}
+                <div className="doc-footer" style={{ marginTop: '40px', borderTop: '1px solid #000', paddingTop: '10px', fontSize: '9pt', textAlign: 'center' }}>
+                  Contraloría del Municipio Pedraza - Estado Barinas Av. 7, entre calles 13 y 14, Edif. Sede de la Biblioteca Pública, Oficina Principal Sector Cultura I, Parroquia Ciudad Bolivia.<br />
+                  Email: contraloria_pedraza@hotmail.com | Telefax: +58 273-9210251
                 </div>
 
               </div>
@@ -293,13 +369,6 @@ export const Step4Review = ({ generalData, teamData, riesgos, updateGeneralData,
           </div>
         )}
 
-      </div>
-
-      {/* Acción Final */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-        <Button variant="primary" onClick={onSignAndGenerate} style={{ padding: '1rem 2rem', fontSize: '1.1rem' }}>
-          Finalizar Planificación
-        </Button>
       </div>
 
     </div>

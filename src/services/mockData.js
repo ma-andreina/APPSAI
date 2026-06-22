@@ -1,12 +1,8 @@
 // Datos de demostración para el Sistema de Auditoría Informática (SAI)
 
 export const mockUsers = [
-  { id: '1', name: 'Jose Alexander Jimenez Devia', role: 'Contralor Municipal', email: 'contraloria_pedraza@hotmail.com', avatar: 'JA', status: 'Activo', twoFactorEnabled: true, createdAt: '2025-01-15' },
-  { id: '2', name: 'Ana Silva', role: 'Director General', email: 'asilva@cmp.gob.ve', avatar: 'AS', status: 'Activo', twoFactorEnabled: true, createdAt: '2025-02-01' },
-  { id: '3', name: 'Luis Ramos', role: 'Director de Control', email: 'lramos@cmp.gob.ve', avatar: 'LR', status: 'Activo', twoFactorEnabled: false, createdAt: '2025-03-10' },
   { id: '4', name: 'María Gonzalez', role: 'Coordinador de Auditoría', email: 'mgonzalez@cmp.gob.ve', avatar: 'MG', status: 'Inactivo', twoFactorEnabled: false, createdAt: '2025-04-20' },
-  { id: '5', name: 'José Pérez', role: 'Auditor', email: 'jperez@cmp.gob.ve', avatar: 'JP', status: 'Activo', twoFactorEnabled: true, createdAt: '2025-05-05' },
-  { id: '6', name: 'Laura Gómez', role: 'Abogado Actuante', email: 'lgomez@cmp.gob.ve', avatar: 'LG', status: 'Activo', twoFactorEnabled: false, createdAt: '2026-01-10' },
+  { id: '6', name: 'Laura Gómez', role: 'Abogado Fiscal', email: 'lgomez@cmp.gob.ve', avatar: 'LG', status: 'Activo', twoFactorEnabled: false, createdAt: '2026-01-10' },
   { id: '7', name: 'Pedro Díaz', role: 'Dir. de Det. de Resp.', email: 'pdiaz@cmp.gob.ve', avatar: 'PD', status: 'Activo', twoFactorEnabled: true, createdAt: '2026-02-15' }
 ];
 

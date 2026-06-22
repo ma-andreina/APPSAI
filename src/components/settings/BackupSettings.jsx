@@ -61,39 +61,7 @@ export const BackupSettings = () => {
 
   return (
     <div>
-      {/* Connection Status */}
-      <Card style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          <div style={{
-            backgroundColor: isConnected ? 'var(--status-closed)' : 'var(--status-critical)',
-            color: 'white', width: '36px', height: '36px', borderRadius: 'var(--radius-button)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-          }}>
-            <Database size={18} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ margin: 0, fontSize: '1.05rem' }}>Estado de la Base de Datos</h3>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Firebase Cloud Firestore</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {isConnected
-              ? <><CheckCircle size={18} color="var(--status-closed)" /><span style={{ color: 'var(--status-closed)', fontWeight: 600, fontSize: '0.9rem' }}>Conectado</span></>
-              : <><XCircle size={18} color="var(--status-critical)" /><span style={{ color: 'var(--status-critical)', fontWeight: 600, fontSize: '0.9rem' }}>Desconectado</span></>
-            }
-          </div>
-        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <div style={{ padding: '1rem', backgroundColor: 'var(--surface-light)', borderRadius: 'var(--radius-button)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>Último Respaldo</span>
-            <div style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '0.25rem' }}>{formatBackupDate(health?.lastBackup)}</div>
-          </div>
-          <div style={{ padding: '1rem', backgroundColor: 'var(--surface-light)', borderRadius: 'var(--radius-button)' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 'bold' }}>Almacenamiento</span>
-            <div style={{ fontSize: '0.95rem', fontWeight: 600, marginTop: '0.25rem' }}>{health?.storageUsed} / {health?.storageLimit}</div>
-          </div>
-        </div>
-      </Card>
 
       {/* System Stats */}
       <Card style={{ marginBottom: '1.5rem' }}>

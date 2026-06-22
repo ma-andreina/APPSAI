@@ -25,58 +25,76 @@ const INSTITUTIONAL_DATA = {
  * Renderiza los dos logos (CMP izquierda, SNCF derecha), el bloque central
  * con la jerarquía textual, y la línea azul marino de separación.
  */
-const DocumentHeader = () => (
-  <div className="doc-header">
-    {/* Logo izquierdo + RIF */}
-    <div className="doc-header__logo--left-wrapper">
-      <img
-        src={INSTITUTIONAL_DATA.logoLeft}
-        alt="Logo CMP"
-        className="doc-header__logo"
-      />
-      <span className="doc-header__rif">{INSTITUTIONAL_DATA.rif}</span>
-    </div>
+const DocumentHeader = () => {
+  // Aseguramos que las URLs de las imágenes sean absolutas para que Word pueda intentar cargarlas
+  const baseUrl = window.location.origin;
+  const logoLeftUrl = INSTITUTIONAL_DATA.logoLeft.startsWith('/') ? `${baseUrl}${INSTITUTIONAL_DATA.logoLeft}` : INSTITUTIONAL_DATA.logoLeft;
+  const logoRightUrl = INSTITUTIONAL_DATA.logoRight.startsWith('/') ? `${baseUrl}${INSTITUTIONAL_DATA.logoRight}` : INSTITUTIONAL_DATA.logoRight;
 
-    {/* Bloque central de texto institucional */}
-    <div className="doc-header__center">
-      {INSTITUTIONAL_DATA.country}
-      <br />
-      {INSTITUTIONAL_DATA.municipality}
-      <br />
-      {INSTITUTIONAL_DATA.organism}
-      <br />
-      <span className="doc-header__slogan">{INSTITUTIONAL_DATA.slogan}</span>
-      <br />
-      {INSTITUTIONAL_DATA.office}
-    </div>
+  return (
+    <table style={{ width: '100%', border: 'none', marginBottom: '20px', borderCollapse: 'collapse' }}>
+      <tbody>
+        <tr>
+          {/* Logo izquierdo + RIF */}
+          <td style={{ width: '20%', textAlign: 'center', verticalAlign: 'middle', border: 'none' }}>
+            <img
+              src={logoLeftUrl}
+              alt="Logo CMP"
+              style={{ width: '80px', height: 'auto', display: 'block', margin: '0 auto' }}
+            />
+            <div style={{ fontSize: '10px', marginTop: '5px', fontWeight: 'bold' }}>{INSTITUTIONAL_DATA.rif}</div>
+          </td>
 
-    {/* Logo derecho (SNCF) */}
-    <img
-      src={INSTITUTIONAL_DATA.logoRight}
-      alt="Logo SNCF"
-      className="doc-header__logo"
-    />
-  </div>
-);
+          {/* Bloque central de texto institucional */}
+          <td style={{ width: '60%', textAlign: 'center', verticalAlign: 'middle', border: 'none', fontWeight: 'bold', fontSize: '14px', lineHeight: '1.2', color: '#000' }}>
+            {INSTITUTIONAL_DATA.country}
+            <br />
+            {INSTITUTIONAL_DATA.municipality}
+            <br />
+            {INSTITUTIONAL_DATA.organism}
+            <br />
+            <span style={{ fontStyle: 'italic' }}>{INSTITUTIONAL_DATA.slogan}</span>
+            <br />
+            {INSTITUTIONAL_DATA.office}
+          </td>
+
+          {/* Logo derecho (SNCF) */}
+          <td style={{ width: '20%', textAlign: 'center', verticalAlign: 'middle', border: 'none' }}>
+            <img
+              src={logoRightUrl}
+              alt="Logo SNCF"
+              style={{ width: '80px', height: 'auto', display: 'block', margin: '0 auto' }}
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+};
 
 /**
  * Pie de página institucional reutilizable.
  * Renderiza la línea azul marino y los datos de contacto.
  */
 const DocumentFooter = () => (
-  <div className="doc-footer">
-    <div>{INSTITUTIONAL_DATA.address}</div>
-    <div>
-      Email:{' '}
-      <a
-        href={`mailto:${INSTITUTIONAL_DATA.email}`}
-        style={{ color: '#0F2D59', textDecoration: 'underline' }}
-      >
-        {INSTITUTIONAL_DATA.email}
-      </a>{' '}
-      | Telefax: {INSTITUTIONAL_DATA.phone}
-    </div>
-  </div>
+  <table style={{ width: '100%', border: 'none', borderTop: '2px solid #0F2D59', marginTop: '30px', paddingTop: '10px', fontSize: '11px', textAlign: 'center' }}>
+    <tbody>
+      <tr>
+        <td style={{ border: 'none', color: '#000' }}>
+          {INSTITUTIONAL_DATA.address}
+          <br />
+          Email:{' '}
+          <a
+            href={`mailto:${INSTITUTIONAL_DATA.email}`}
+            style={{ color: '#0F2D59', textDecoration: 'underline' }}
+          >
+            {INSTITUTIONAL_DATA.email}
+          </a>{' '}
+          | Telefax: {INSTITUTIONAL_DATA.phone}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 );
 
 /**

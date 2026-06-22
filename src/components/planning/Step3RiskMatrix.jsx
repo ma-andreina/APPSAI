@@ -46,7 +46,7 @@ const FACTORES_INICIALES = [
   { id: 'd5', categoria: 'Riesgo de Detección', factor: 'Independencia y Objetividad', prob: 1, impacto: 1 },
 ];
 
-export const Step3RiskMatrix = ({ riesgos, updateRiesgos }) => {
+export const Step3RiskMatrix = ({ riesgos, updateRiesgos, errors = [] }) => {
   // Inicializar factores si está vacío
   useEffect(() => {
     if (riesgos.length === 0) {
@@ -164,7 +164,7 @@ export const Step3RiskMatrix = ({ riesgos, updateRiesgos }) => {
     <Card style={{ padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div style={{ flex: 1, marginRight: '2rem' }}>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>Matriz de Evaluación de Riesgos</h2>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', color: errors.includes('riesgos') ? 'red' : 'inherit', transition: 'color 0.3s' }}>Matriz de Evaluación de Riesgos</h2>
           <p style={{ color: 'var(--text-secondary)', margin: 0, lineHeight: '1.6' }}>
             Evalúe la probabilidad y el impacto de cada factor para determinar el riesgo global. 
             La <strong>probabilidad</strong> asigna la posibilidad de ocurrencia de los elementos de cada riesgo. 

@@ -10,7 +10,8 @@ import { useAuth } from '../context/AuthContext';
 
 export const UserManagement = () => {
   const { currentUser } = useAuth();
-  const isContralor = currentUser?.role === 'Contralor Municipal';
+  const authorizedRoles = ['Contralor Municipal', 'Director General', 'Director de Control'];
+  const canManageUsers = authorizedRoles.includes(currentUser?.role);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +46,13 @@ export const UserManagement = () => {
   };
 
   const handleSubmit = async (formData) => {
+    // Validar cédula duplicada
+    const isDuplicate = users.some(u => u.cedula === formData.cedula && u.id !== editingUser?.id);
+    if (isDuplicate) {
+      addNotification('La cédula ingresada ya está registrada para otro usuario.', 'error');
+      return;
+    }
+
     try {
       if (editingUser) {
         await userService.updateUser(editingUser.id, formData);
@@ -77,6 +85,16 @@ export const UserManagement = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await userService.deleteUser(id);
+      addNotification('Usuario eliminado permanentemente', 'success');
+      fetchUsers();
+    } catch (error) {
+      addNotification('Error al eliminar usuario', 'error');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
@@ -100,7 +118,7 @@ export const UserManagement = () => {
             </p>
           </div>
         </div>
-        {isContralor && (
+        {canManageUsers && (
           <Button variant="primary" onClick={() => handleOpenModal()} style={{ gap: '8px' }}>
             <Plus size={18} />
             Nuevo Usuario
@@ -122,7 +140,8 @@ export const UserManagement = () => {
             users={users} 
             onEdit={handleOpenModal} 
             onToggleStatus={handleToggleStatus} 
-            canEdit={isContralor}
+            onDelete={handleDelete}
+            canEdit={canManageUsers}
           />
         )}
       </div>

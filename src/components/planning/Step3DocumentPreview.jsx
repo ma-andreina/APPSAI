@@ -2,17 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { QrCode, Lock, ArrowLeft } from 'lucide-react';
 import { InstitutionalDocumentLayout } from '../document/InstitutionalDocumentLayout';
+import { settingsService } from '../../services/settingsService';
 
 export const Step3DocumentPreview = ({ generalData, teamData, updateGeneralData, onSignAndGenerate, onCancel, isPreviewOnly = false }) => {
   const [isSigned, setIsSigned] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
   const [oficioNumber, setOficioNumber] = useState('');
+  const [configData, setConfigData] = useState(null);
 
   useEffect(() => {
     // Generar número de oficio aleatorio simulando correlativo (ej. 142-2026)
     const randomNum = String(Math.floor(Math.random() * 900) + 100);
     const year = new Date().getFullYear();
     setOficioNumber(`${randomNum}-${year}`);
+
+    // Fetch config
+    settingsService.getSystemConfig().then(config => {
+      setConfigData(config.institutional);
+    });
   }, []);
 
   // Fecha actual formateada
@@ -147,10 +154,12 @@ export const Step3DocumentPreview = ({ generalData, teamData, updateGeneralData,
         </p>
 
         {/* Firma */}
-        <div>
+        <div style={{ textAlign: 'center' }}>
           Atentamente,<br /><br /><br /><br />
-          NOMBRES Y APELLIDOS<br />
-          Contralor Municipal
+          <span style={{ fontWeight: 'bold' }}>{configData?.maxAuthority || 'NOMBRES Y APELLIDOS'}</span><br />
+          {configData?.maxAuthorityRole || 'Contralor Municipal'}<br />
+          {configData?.maxAuthorityAppointment && <>{configData.maxAuthorityAppointment}<br /></>}
+          {configData?.maxAuthorityGazette && <>{configData.maxAuthorityGazette}</>}
         </div>
       </InstitutionalDocumentLayout>
     </div>

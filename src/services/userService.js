@@ -1,5 +1,5 @@
 import { db } from './firebaseConfig';
-import { collection, getDocs, doc, setDoc, updateDoc, query, where, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
 import { mockUsers } from './mockData';
 
 const SESSION_KEY = 'sai_current_user';
@@ -222,6 +222,22 @@ export const userService = {
       return { id, status: newStatus };
     } catch (error) {
       console.error('Error al cambiar estatus de usuario en Firestore:', error);
+      throw error;
+    }
+  },
+
+  deleteUser: async (id) => {
+    if (!isFirebaseConfigured) {
+      localUsers = localUsers.filter(u => u.id !== id);
+      return id;
+    }
+
+    try {
+      const docRef = doc(db, 'users', id);
+      await deleteDoc(docRef);
+      return id;
+    } catch (error) {
+      console.error('Error al eliminar usuario en Firestore:', error);
       throw error;
     }
   }

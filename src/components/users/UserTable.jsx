@@ -3,9 +3,9 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
-import { MoreVertical, Edit2, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react';
 
-export const UserTable = ({ users, onEdit, onToggleStatus, canEdit }) => {
+export const UserTable = ({ users, onEdit, onToggleStatus, onDelete, canEdit }) => {
   return (
     <Card style={{ padding: 0, overflow: 'hidden' }}>
       <div style={{ overflowX: 'auto' }}>
@@ -13,6 +13,7 @@ export const UserTable = ({ users, onEdit, onToggleStatus, canEdit }) => {
           <thead>
             <tr style={{ backgroundColor: 'var(--surface-hover)', borderBottom: '1px solid var(--border-light)' }}>
               <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Usuario</th>
+              <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Cédula</th>
               <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Rol Institucional</th>
               <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Estado</th>
               {canEdit && <th style={{ padding: '1rem', fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'right' }}>Acciones</th>}
@@ -29,6 +30,9 @@ export const UserTable = ({ users, onEdit, onToggleStatus, canEdit }) => {
                       <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{user.email}</div>
                     </div>
                   </div>
+                </td>
+                <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
+                  {user.cedula || '-'}
                 </td>
                 <td style={{ padding: '1rem' }}>
                   <Badge status="default">{user.role}</Badge>
@@ -47,6 +51,13 @@ export const UserTable = ({ users, onEdit, onToggleStatus, canEdit }) => {
                       <Button variant="outline" size="sm" onClick={() => onEdit(user)} title="Editar Usuario">
                         <Edit2 size={16} />
                       </Button>
+                      <Button variant="outline" size="sm" onClick={() => {
+                        if (window.confirm(`¿Estás seguro de que deseas eliminar al usuario ${user.name}?`)) {
+                          onDelete(user.id);
+                        }
+                      }} title="Eliminar Usuario" style={{ color: 'var(--status-critical)' }}>
+                        <Trash2 size={16} />
+                      </Button>
                     </div>
                   </td>
                 )}
@@ -54,7 +65,7 @@ export const UserTable = ({ users, onEdit, onToggleStatus, canEdit }) => {
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={canEdit ? "4" : "3"} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <td colSpan={canEdit ? "5" : "4"} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                   No hay usuarios registrados.
                 </td>
               </tr>

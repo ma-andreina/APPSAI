@@ -12,6 +12,7 @@ import { Plus, ArrowLeft, ArrowRight, FileText } from 'lucide-react';
 export const AuditPlanning = () => {
   const [isWizardActive, setIsWizardActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState([]);
   const { addNotification } = useAppContext();
 
   // Estado centralizado del Wizard
@@ -22,6 +23,12 @@ export const AuditPlanning = () => {
       alcanceDesde: '',
       alcanceHasta: '',
       objetivo: '',
+      origenActuacion: '',
+      objetivosEspecificos: '',
+      enfoque: '',
+      metodosProcedimientosTecnicas: '',
+      caracteristicasInstitucion: '',
+      baseLegalTecnica: '',
       tipo: 'Seguridad de la Información',
       // Mantenemos campos legacy temporales para no romper componentes aún no actualizados
       destinatarioNombre: '',
@@ -42,17 +49,36 @@ export const AuditPlanning = () => {
   ];
 
   const handleNextStep = () => {
-    // Validaciones básicas antes de avanzar
+    let newErrors = [];
+    
     if (currentStep === 1) {
-      if (!wizardData.general.institucion || !wizardData.general.objetivo) {
-        addNotification('Por favor, complete al menos la Institución y el Objetivo.', 'warning');
-        return;
-      }
+      const requiredFields = [
+        'codigo', 'institucion', 'alcanceDesde', 'alcanceHasta', 
+        'objetivo', 'origenActuacion', 'objetivosEspecificos', 
+        'enfoque', 'metodosProcedimientosTecnicas', 
+        'caracteristicasInstitucion', 'baseLegalTecnica', 
+        'oficioNro', 'destinatarioNombre', 'destinatarioCargo', 'destinatarioDireccion'
+      ];
+      requiredFields.forEach(field => {
+        if (!wizardData.general[field] || String(wizardData.general[field]).trim() === '') {
+          newErrors.push(field);
+        }
+      });
+    } else if (currentStep === 2) {
+      if (!wizardData.cronograma.inicio) newErrors.push('cronogramaInicio');
+      if (!wizardData.cronograma.fin) newErrors.push('cronogramaFin');
+      if (wizardData.team.length === 0) newErrors.push('team');
+    } else if (currentStep === 3) {
+      if (wizardData.riesgos.length === 0) newErrors.push('riesgos');
     }
-    if (currentStep === 2 && wizardData.team.length === 0) {
-      addNotification('Debe asignar al menos un miembro a la comisión.', 'warning');
+
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
+      addNotification('Faltan campos por llenar', 'warning');
       return;
     }
+
+    setErrors([]);
     setCurrentStep(prev => prev + 1);
   };
 
@@ -65,6 +91,7 @@ export const AuditPlanning = () => {
     const newAudit = {
       title: 'Auditoría a ' + wizardData.general.institucion,
       entity: wizardData.general.institucion,
+      codigo: wizardData.general.codigo || `AUD-${Date.now()}`,
       progress: 0,
       tasksTotal: 93,
       tasksCompleted: 0,
@@ -79,7 +106,7 @@ export const AuditPlanning = () => {
     setIsWizardActive(false);
     setCurrentStep(1);
     setWizardData({
-      general: { codigo: '', institucion: '', alcanceDesde: '', alcanceHasta: '', objetivo: '', tipo: 'Seguridad de la Información', destinatarioNombre: '', destinatarioCargo: '', destinatarioDireccion: '', oficioNro: '' },
+      general: { codigo: '', institucion: '', alcanceDesde: '', alcanceHasta: '', objetivo: '', origenActuacion: '', objetivosEspecificos: '', enfoque: '', metodosProcedimientosTecnicas: '', caracteristicasInstitucion: '', baseLegalTecnica: '', tipo: 'Seguridad de la Información', destinatarioNombre: '', destinatarioCargo: '', destinatarioDireccion: '', oficioNro: '' },
       team: [],
       cronograma: { inicio: '', fin: '' },
       riesgos: []
@@ -120,7 +147,8 @@ export const AuditPlanning = () => {
         {currentStep === 1 && (
           <Step1GeneralData 
             data={wizardData.general} 
-            updateData={(newData) => setWizardData({ ...wizardData, general: newData })} 
+            updateData={(newData) => { setErrors(errors.filter(e => !Object.keys(newData).some(k => newData[k] !== wizardData.general[k] && e === k))); setWizardData({ ...wizardData, general: newData }); }} 
+            errors={errors}
           />
         )}
         {currentStep === 2 && (
@@ -128,15 +156,17 @@ export const AuditPlanning = () => {
             teamData={wizardData.team}
             generalData={wizardData.general}
             cronograma={wizardData.cronograma}
-            updateTeam={(newData) => setWizardData({ ...wizardData, team: newData })} 
+            updateTeam={(newData) => { setErrors(errors.filter(e => e !== 'team')); setWizardData({ ...wizardData, team: newData }); }} 
             updateGeneral={(newData) => setWizardData({ ...wizardData, general: newData })}
-            updateCronograma={(newData) => setWizardData({ ...wizardData, cronograma: newData })}
+            updateCronograma={(newData) => { setErrors(errors.filter(e => !['cronogramaInicio', 'cronogramaFin'].includes(e))); setWizardData({ ...wizardData, cronograma: newData }); }}
+            errors={errors}
           />
         )}
         {currentStep === 3 && (
           <Step3RiskMatrix 
             riesgos={wizardData.riesgos}
-            updateRiesgos={(newData) => setWizardData({ ...wizardData, riesgos: newData })}
+            updateRiesgos={(newData) => { setErrors(errors.filter(e => e !== 'riesgos')); setWizardData({ ...wizardData, riesgos: newData }); }}
+            errors={errors}
           />
         )}
         {currentStep === 4 && (
@@ -165,9 +195,13 @@ export const AuditPlanning = () => {
           </Button>
         </div>
         
-        {currentStep < 4 && (
+        {currentStep < 4 ? (
           <Button variant="primary" onClick={handleNextStep}>
             Siguiente <ArrowRight size={18} style={{ marginLeft: '8px' }} />
+          </Button>
+        ) : (
+          <Button variant="primary" onClick={handleFinalize}>
+            Guardar
           </Button>
         )}
       </div>

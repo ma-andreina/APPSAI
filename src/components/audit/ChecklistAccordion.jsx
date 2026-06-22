@@ -104,12 +104,16 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
                   <button
                     key={statusOption}
                     onClick={() => {
-                      setLocalStatus(statusOption);
-                      if (statusOption === 'No cumple' && onTriggerFinding) {
-                        onTriggerFinding({ ...control, observations: localObservations });
-                      }
-                      if (statusOption === 'Cumple' || statusOption === 'N/A') {
-                        setIsOpen(false);
+                      if (localStatus === statusOption) {
+                        setLocalStatus(null);
+                      } else {
+                        setLocalStatus(statusOption);
+                        if (statusOption === 'No cumple' && onTriggerFinding) {
+                          onTriggerFinding({ ...control, observations: localObservations });
+                        }
+                        if (statusOption === 'Cumple' || statusOption === 'N/A') {
+                          setIsOpen(false);
+                        }
                       }
                     }}
                     style={{

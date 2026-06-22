@@ -6,9 +6,10 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   const isEditing = !!initialData;
   
   const [formData, setFormData] = useState({
+    cedula: '',
     name: '',
     email: '',
-    role: 'Auditor',
+    role: 'Auditor Fiscal',
     status: 'Activo',
     twoFactorEnabled: false
   });
@@ -17,27 +18,29 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     'Contralor Municipal',
     'Director General',
     'Director de Control',
-    'Coordinador',
-    'Auditor',
-    'Abogado',
+    'Coordinador de Auditoría',
+    'Auditor Fiscal',
+    'Abogado Fiscal',
     'Director de Determinación de Responsabilidades'
   ];
 
   useEffect(() => {
     if (initialData) {
       setFormData({
+        cedula: initialData.cedula || '',
         name: initialData.name || '',
         email: initialData.email || '',
-        role: initialData.role || 'Auditor',
+        role: initialData.role || 'Auditor Fiscal',
         status: initialData.status || 'Activo',
         twoFactorEnabled: initialData.twoFactorEnabled || false
       });
     } else {
       setFormData({
+        cedula: '',
         name: '',
         email: '',
         password: '',
-        role: 'Auditor',
+        role: 'Auditor Fiscal',
         status: 'Activo',
         twoFactorEnabled: false
       });
@@ -81,6 +84,23 @@ export const UserFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Editar Usuario' : 'Nuevo Usuario'}>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', height: '100%' }}>
         
+        <div>
+          <label style={labelStyle}>Cédula de Identidad</label>
+          <input 
+            type="text" 
+            name="cedula" 
+            value={formData.cedula || ''} 
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, '');
+              setFormData(prev => ({ ...prev, cedula: val }));
+            }} 
+            style={inputStyle} 
+            required 
+            placeholder="Ej. 12345678"
+            maxLength={10}
+          />
+        </div>
+
         <div>
           <label style={labelStyle}>Nombre Completo</label>
           <input 
