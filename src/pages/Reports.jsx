@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { reportService } from '../services/reportService';
 import { ReportCard } from '../components/reports/ReportCard';
 import { ReportViewerModal } from '../components/reports/ReportViewerModal';
+import { DefinitiveReportEditorModal } from '../components/reports/DefinitiveReportEditorModal';
 import { SignatureModal } from '../components/reports/SignatureModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { FileText } from 'lucide-react';
@@ -14,6 +15,7 @@ export const Reports = () => {
   
   // Modals state
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedType, setSelectedType] = useState('preliminar');
@@ -39,8 +41,18 @@ export const Reports = () => {
 
   const handlePreview = (report, type) => {
     setSelectedReport(report);
+    if (type === 'definitivo_edit') {
+      setEditorOpen(true);
+      return;
+    }
     setSelectedType(type);
     setViewerOpen(true);
+  };
+
+  const handleSaveChapter4 = async (reportId, auditId, chapter4Data) => {
+    await reportService.saveDefinitiveChapter4(reportId, chapter4Data);
+    setEditorOpen(false);
+    fetchReports();
   };
 
   const handleOpenSignature = () => {
@@ -54,10 +66,19 @@ export const Reports = () => {
       addNotification('Informe firmado exitosamente', 'success');
       setSignatureOpen(false);
       fetchReports();
-      // Opcional: Reabrir el visor para ver la firma estampada
-      // setViewerOpen(true); 
     } catch (error) {
       addNotification('Error al firmar el informe', 'error');
+    }
+  };
+
+  const handleApproveExecutive = async (rep) => {
+    try {
+      await reportService.approveExecutive(rep.id);
+      addNotification('Resumen Ejecutivo aprobado exitosamente', 'success');
+      fetchReports();
+      setSelectedReport(prev => prev ? { ...prev, executive: { status: 'aprobado', date: new Date().toISOString().split('T')[0] } } : prev);
+    } catch (err) {
+      addNotification('Error al aprobar el Resumen Ejecutivo', 'error');
     }
   };
 
@@ -80,7 +101,7 @@ export const Reports = () => {
           <div>
             <h1 style={{ margin: '0 0 0.25rem 0', fontSize: '1.5rem' }}>Repositorio de Informes</h1>
             <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-              Generación de documentos estructurados y aplicación de firma electrónica.
+              Generación de documentos estructurados.
             </p>
           </div>
         </div>
@@ -96,15 +117,16 @@ export const Reports = () => {
           </div>
         ) : reports.length === 0 ? (
            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-             No hay informes generados actualmente.
+              No hay informes disponibles. Complete las fases de planificación y ejecución para generar informes.
            </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
             {reports.map((report) => (
               <ReportCard 
                 key={report.id} 
                 report={report} 
-                onPreview={handlePreview} 
+                onPreview={handlePreview}
+                onSign={handleOpenSignature}
               />
             ))}
           </div>
@@ -118,6 +140,15 @@ export const Reports = () => {
         report={selectedReport}
         type={selectedType}
         onOpenSignatureModal={handleOpenSignature}
+        onApproveExecutive={handleApproveExecutive}
+      />
+
+      {/* Redacción y Edición de Informe Definitivo (Capítulo IV) */}
+      <DefinitiveReportEditorModal 
+        isOpen={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        report={selectedReport}
+        onSaveAndPreview={handleSaveChapter4}
       />
 
       {/* Gatekeeper (Autorización de Firma por PIN) */}

@@ -10,17 +10,17 @@ import html2pdf from 'html2pdf.js';
 import { generateDocx } from '../../utils/docxExport';
 import { InstitutionalDocumentLayout } from '../document/InstitutionalDocumentLayout';
 
-export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatureModal }) => {
+export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatureModal, onApproveExecutive }) => {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] = useState(null);
   const contentRef = useRef(null);
   const { currentUser } = useAuth();
 
   useEffect(() => {
     if (isOpen && report) {
       setLoading(true);
-      reportService.generateReportData(report.auditId, type).then(data => {
+      reportService.generateReportData(report.auditId, type, report).then(data => {
         setContent(data);
         setLoading(false);
       });
@@ -29,13 +29,14 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
 
   if (!isOpen || !report) return null;
 
-  const isDefinitive = type === 'definitivo';
+  const isDefinitive = type === 'definitivo' || type === 'definitivo_edit';
   const isSigned = report.definitive?.status === 'firmado';
-  const canSign = isDefinitive && !isSigned && currentUser?.role === 'Contralor Municipal';
+  const canSign = isDefinitive && !isSigned && (currentUser?.role === 'contralor' || currentUser?.role === 'auditor');
+  const isExecutiveApproved = report.executive?.status === 'aprobado';
 
   const handleDownloadPDF = async () => {
     if (!contentRef.current || !content) return;
-    setIsDownloading(true);
+    setDownloadingFormat('pdf');
     
     // Guardamos el padding original y lo quitamos para que no se sume al margen del PDF
     const originalPadding = contentRef.current.style.padding;
@@ -56,19 +57,19 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
     } finally {
       // Restauramos el padding visual de la web
       contentRef.current.style.padding = originalPadding;
-      setIsDownloading(false);
+      setDownloadingFormat(null);
     }
   };
 
   const handleDownloadDOCX = async () => {
     if (!content) return;
-    setIsDownloading(true);
+    setDownloadingFormat('docx');
     try {
       await generateDocx(content, type, report);
     } catch (err) {
       console.error("Error al generar DOCX", err);
     } finally {
-      setIsDownloading(false);
+      setDownloadingFormat(null);
     }
   };
 
@@ -92,6 +93,12 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
   const h3Style = { fontSize: '12pt', fontWeight: 'bold', marginTop: '1rem', marginBottom: '0.5rem' };
   const pStyle = { marginBottom: '1rem', textAlign: 'justify' };
 
+  const ensureArray = (val) => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val.trim() !== '') return [val];
+    return [];
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Vista Previa: Informe ${type.charAt(0).toUpperCase() + type.slice(1)}`}>
       
@@ -100,16 +107,21 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Badge status="default">{report.auditId}</Badge>
           <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Estado: {isDefinitive && isSigned ? 'Firmado' : 'Borrador'}
+            Estado: {isDefinitive && isSigned ? 'Firmado' : type === 'ejecutivo' ? (isExecutiveApproved ? 'Aprobado' : 'Generado / Pendiente Aprobación') : 'Borrador'}
           </span>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Button variant="outline" size="sm" onClick={handleDownloadDOCX} disabled={isDownloading || loading}>
-            <Download size={16} style={{ marginRight: '8px' }} /> {isDownloading ? 'Generando...' : 'DOCX'}
+          <Button variant="outline" size="sm" onClick={handleDownloadDOCX} disabled={downloadingFormat !== null || loading}>
+            <Download size={16} style={{ marginRight: '8px' }} /> {downloadingFormat === 'docx' ? 'Generando...' : 'DOCX'}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={isDownloading || loading}>
-            <Download size={16} style={{ marginRight: '8px' }} /> {isDownloading ? 'Generando...' : 'PDF'}
+          <Button variant="outline" size="sm" onClick={handleDownloadPDF} disabled={downloadingFormat !== null || loading}>
+            <Download size={16} style={{ marginRight: '8px' }} /> {downloadingFormat === 'pdf' ? 'Generando...' : 'PDF'}
           </Button>
+          {type === 'ejecutivo' && !isExecutiveApproved && (
+            <Button variant="primary" size="sm" onClick={() => onApproveExecutive?.(report)} disabled={loading}>
+              <CheckCircle size={16} style={{ marginRight: '8px' }} /> Aprobar Documento
+            </Button>
+          )}
           {canSign && (
             <Button variant="primary" size="sm" onClick={() => onOpenSignatureModal()}>
               <FileSignature size={16} style={{ marginRight: '8px' }} /> Firmar Informe
@@ -134,87 +146,94 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
           <InstitutionalDocumentLayout isScreen={true} ref={contentRef}>
             {/* PORTADA DEL INFORME (Primer bloque del cuerpo) */}
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-              <div style={h1Style}>{content.portada.unidadOrganizativa}</div>
-              <div style={h1Style}>{content.portada.tituloActuacion}</div>
-              <div style={h1Style}>{content.portada.tipoInforme}</div>
+              <div style={h1Style}>{content.portada?.unidadOrganizativa || ''}</div>
+              <div style={h1Style}>{content.portada?.tituloActuacion || ''}</div>
+              <div style={h1Style}>{content.portada?.tipoInforme || ''}</div>
             </div>
 
             {/* Mapeo Dinámico según el tipo de informe */}
             {type === 'ejecutivo' ? (
               <>
                 <h2 style={h2Style}>1. Objetivo General</h2>
-                <p style={pStyle}>{content.objetivoGeneral}</p>
+                <p style={pStyle}>{content.objetivoGeneral || ''}</p>
 
                 <h2 style={h2Style}>2. Alcance</h2>
-                <p style={pStyle}>{content.alcance}</p>
+                <p style={pStyle}>{content.alcance || ''}</p>
 
                 <h2 style={h2Style}>3. Observaciones Relevantes</h2>
-                <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem', textAlign: 'justify' }}>
-                  {content.observacionesRelevantes.map((obs, idx) => (
-                    <li key={idx} style={{ marginBottom: '0.5rem' }}>{obs}</li>
+                <div style={{ marginBottom: '1rem', paddingLeft: '0.5rem' }}>
+                  {ensureArray(content.observacionesRelevantes).map((obs, idx) => (
+                    <p key={idx} style={{ ...pStyle, marginBottom: '0.5rem' }}>{obs}</p>
                   ))}
-                </ul>
+                </div>
 
                 <h2 style={h2Style}>4. Conclusión</h2>
-                <p style={pStyle}>{content.conclusion}</p>
+                <p style={pStyle}>{content.conclusion || ''}</p>
 
                 <h2 style={h2Style}>5. Recomendaciones</h2>
-                <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem', textAlign: 'justify' }}>
-                  {content.recomendaciones.map((rec, idx) => (
-                    <li key={idx} style={{ marginBottom: '0.5rem' }}>{rec}</li>
+                <div style={{ marginBottom: '1rem' }}>
+                  {ensureArray(content.recomendaciones).map((rec, idx) => (
+                    <p key={idx} style={{ ...pStyle, marginBottom: '0.5rem', paddingLeft: '0.5rem' }}>{rec}</p>
                   ))}
-                </ul>
+                </div>
               </>
             ) : (
               <>
                 {/* CAPÍTULO I */}
                 <h2 style={h2Style}>Capítulo I: Aspectos Preliminares</h2>
                 <h3 style={h3Style}>1.1. Origen de la Actuación</h3>
-                <p style={pStyle}>{content.capitulo1.origen}</p>
+                <p style={pStyle}>{content.capitulo1?.origen || ''}</p>
                 
                 <h3 style={h3Style}>1.2. Alcance</h3>
-                <p style={pStyle}>{content.capitulo1.alcance}</p>
+                <p style={pStyle}>{typeof content.capitulo1?.alcance === 'string' ? content.capitulo1.alcance.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, '$3-$2-$1') : (content.capitulo1?.alcance || '')}</p>
 
                 <h3 style={h3Style}>1.3. Objetivos</h3>
-                <p style={pStyle}><strong>Objetivo General:</strong> {content.capitulo1.objetivos.general}</p>
+                <p style={pStyle}><strong>Objetivo General:</strong> {content.capitulo1?.objetivos?.general || ''}</p>
                 <p style={pStyle}><strong>Objetivos Específicos:</strong></p>
-                <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem' }}>
-                  {content.capitulo1.objetivos.especificos.map((obj, i) => <li key={i}>{obj}</li>)}
-                </ul>
+                <div style={{ marginBottom: '1rem', paddingLeft: '0.5rem' }}>
+                  {ensureArray(content.capitulo1?.objetivos?.especificos).map((obj, i) => (
+                    <p key={i} style={{ ...pStyle, marginBottom: '0.25rem' }}>{obj}</p>
+                  ))}
+                </div>
 
                 <h3 style={h3Style}>1.4. Enfoque</h3>
-                <p style={pStyle}>{content.capitulo1.enfoque}</p>
+                <p style={pStyle}>{content.capitulo1?.enfoque || ''}</p>
 
                 <h3 style={h3Style}>1.5. Métodos, Procedimientos y Técnicas</h3>
-                <p style={pStyle}>{content.capitulo1.metodos}</p>
+                <p style={pStyle}>{content.capitulo1?.metodos || ''}</p>
 
                 {/* CAPÍTULO II */}
                 <h2 style={h2Style}>Capítulo II: Características Generales del Objeto Evaluado</h2>
-                <p style={pStyle}><strong>2.1. Creación:</strong> {content.capitulo2.creacion}</p>
-                <p style={pStyle}><strong>2.4. Organización (Organigrama):</strong> {content.capitulo2.organigrama}</p>
-                <p style={pStyle}><strong>2.5. Base Legal y Técnica:</strong> {content.capitulo2.baseLegal}</p>
+                <h3 style={h3Style}>2.1. Creación</h3>
+                <p style={pStyle}>{content.capitulo2?.creacion || ''}</p>
+
+                <h3 style={h3Style}>2.2. Base Legal y Técnica</h3>
+                <p style={pStyle}>{content.capitulo2?.baseLegal || ''}</p>
 
                 {/* CAPÍTULO III */}
                 <h2 style={h2Style}>Capítulo III: Observaciones Derivadas del Análisis</h2>
-                {content.capitulo3.map((hallazgo, idx) => (
-                  <div key={idx} style={{ marginBottom: '2rem' }}>
-                    <p style={pStyle}><strong>Observación Nro {idx + 1}:</strong> {hallazgo.titulo}</p>
-                    <p style={pStyle}><em>Condición:</em> {hallazgo.condicion}</p>
-                    <p style={pStyle}><em>Criterio:</em> {hallazgo.criterio}</p>
-                    <p style={pStyle}><em>Causa:</em> {hallazgo.causa}</p>
-                    <p style={pStyle}><em>Efecto:</em> {hallazgo.efecto}</p>
-                  </div>
-                ))}
+                {!ensureArray(content.capitulo3).length ? (
+                  <p style={{ ...pStyle, fontStyle: 'italic' }}>No se registraron observaciones derivadas del análisis.</p>
+                ) : (
+                  ensureArray(content.capitulo3).map((h, i) => (
+                    <div key={i} style={{ marginBottom: '1.5rem', paddingLeft: '0.5rem', borderLeft: '3px solid #1E3A8A' }}>
+                      <p style={{ ...pStyle, fontWeight: 'bold', color: '#1E3A8A' }}>3.{i + 1}. Condición: {h.condicion}</p>
+                      <p style={pStyle}><strong>Criterio:</strong> {h.criterio}</p>
+                      <p style={pStyle}><strong>Causa:</strong> {h.causa}</p>
+                      <p style={pStyle}><strong>Efecto:</strong> {h.efecto}</p>
+                    </div>
+                  ))
+                )}
 
                 {/* CAPÍTULO IV (Solo Definitivo) */}
                 {isDefinitive && (
                   <>
                     <h2 style={h2Style}>Capítulo IV: Conclusión y Recomendaciones</h2>
-                    <p style={pStyle}><strong>Conclusión:</strong> {content.capitulo4.conclusion}</p>
+                    <p style={pStyle}><strong>Conclusión:</strong> {content.capitulo4?.conclusion || ''}</p>
                     <p style={pStyle}><strong>Recomendaciones:</strong></p>
-                    <ul style={{ paddingLeft: '1.5rem', marginBottom: '1rem' }}>
-                      {content.capitulo4.recomendaciones.map((rec, i) => <li key={i}>{rec}</li>)}
-                    </ul>
+                    <div style={{ marginBottom: '1rem', paddingLeft: '0.5rem' }}>
+                      {ensureArray(content.capitulo4?.recomendaciones).map((rec, i) => <p key={i} style={{ ...pStyle, marginBottom: '0.5rem' }}>{rec}</p>)}
+                    </div>
                   </>
                 )}
               </>
@@ -225,35 +244,24 @@ export const ReportViewerModal = ({ isOpen, onClose, report, type, onOpenSignatu
               <div style={{ marginTop: '5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 
                 {isSigned ? (
-                  report.definitive.signType === 'digital' ? (
-                    // Firma Digital Simulada
-                    <div style={{ border: '2px solid var(--brand-accent)', padding: '1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#F0F9FF', color: 'var(--brand-primary)' }}>
-                      <QrCode size={64} />
-                      <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>FIRMADO DIGITALMENTE POR:</div>
-                        <div style={{ fontSize: '14pt', fontWeight: 'bold', margin: '0.25rem 0' }}>{report.definitive.signedBy}</div>
-                        <div style={{ fontSize: '10pt' }}>{content.portada.unidadOrganizativa}</div>
-                        <div style={{ fontSize: '8pt', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Hash de integridad: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
-                      </div>
+                  // Firma Oficial Estampada
+                  <div style={{ width: '420px', textAlign: 'center' }}>
+                    <div style={{ borderBottom: '1px solid black', height: '80px', marginBottom: '0.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '4px' }}>
+                      <span style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '18pt', color: '#1E3A8A' }}>{report.definitive?.signedBy || content.pieFirma.firmanteNombre}</span>
                     </div>
-                  ) : (
-                    // Firma Física (Espacio en blanco)
-                    <div style={{ width: '300px', textAlign: 'center' }}>
-                      <div style={{ borderBottom: '1px solid black', height: '80px', marginBottom: '0.5rem' }}></div>
-                      <div style={{ fontWeight: 'bold' }}>{report.definitive.signedBy}</div>
-                      <div style={{ fontWeight: 'bold' }}>Cargo: {content.pieFirma.firmanteCargo}</div>
-                      <div style={{ fontSize: '10pt', marginTop: '0.25rem' }}>Designado según Resolución N° XXXX-XX</div>
-                    </div>
-                  )
+                    <div style={{ fontWeight: 'bold' }}>{report.definitive?.signedBy || content.pieFirma.firmanteNombre}</div>
+                    <div style={{ fontWeight: 'bold' }}>Cargo: {content.pieFirma.firmanteCargo}</div>
+                    <div style={{ fontSize: '10pt', marginTop: '0.25rem', color: '#334155' }}>{content.pieFirma.acta || 'Acta de Sesión Extraordinaria Nro. 003-2019 de fecha 15-05-2019'}</div>
+                    <div style={{ fontSize: '10pt', color: '#334155' }}>{content.pieFirma.publicacion || 'Gaceta Municipal Nro 1025 de fecha 15-05-2019'}</div>
+                  </div>
                 ) : (
                   // Borrador sin firma
-                  <div style={{ width: '300px', textAlign: 'center', opacity: 0.5 }}>
-                    <div style={{ borderBottom: '1px dashed black', height: '80px', marginBottom: '0.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '0.5rem' }}>
-                      [Espacio reservado para firma]
-                    </div>
+                  <div style={{ width: '420px', textAlign: 'center', opacity: 0.6 }}>
+                    <div style={{ borderBottom: '1px dashed black', height: '80px', marginBottom: '0.5rem' }}></div>
                     <div style={{ fontWeight: 'bold' }}>{content.pieFirma.firmanteNombre}</div>
                     <div style={{ fontWeight: 'bold' }}>Cargo: {content.pieFirma.firmanteCargo}</div>
-                    <div style={{ fontSize: '10pt', marginTop: '0.25rem' }}>Designado según Resolución N° XXXX-XX</div>
+                    <div style={{ fontSize: '10pt', marginTop: '0.25rem' }}>{content.pieFirma.acta || 'Acta de Sesión Extraordinaria Nro. 003-2019 de fecha 15-05-2019'}</div>
+                    <div style={{ fontSize: '10pt' }}>{content.pieFirma.publicacion || 'Gaceta Municipal Nro 1025 de fecha 15-05-2019'}</div>
                   </div>
                 )}
               </div>

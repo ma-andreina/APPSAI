@@ -77,7 +77,6 @@ export const generateDocx = async (content, type, report) => {
     content.recomendaciones.forEach(rec => {
       children.push(new Paragraph({
         children: [new TextRun({ text: rec, font: "Arial" })],
-        bullet: { level: 0 },
         alignment: AlignmentType.JUSTIFIED,
         spacing: { after: 120 }
       }));
@@ -89,7 +88,7 @@ export const generateDocx = async (content, type, report) => {
     children.push(createParagraph(content.capitulo1.origen));
 
     children.push(createHeading('1.2. Alcance', HeadingLevel.HEADING_3));
-    children.push(createParagraph(content.capitulo1.alcance));
+    children.push(createParagraph(typeof content.capitulo1.alcance === 'string' ? content.capitulo1.alcance.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, '$3-$2-$1') : content.capitulo1.alcance));
 
     children.push(createHeading('1.3. Objetivos', HeadingLevel.HEADING_3));
     children.push(createParagraph('Objetivo General: ' + content.capitulo1.objetivos.general, { bold: true }));
@@ -97,7 +96,6 @@ export const generateDocx = async (content, type, report) => {
     content.capitulo1.objetivos.especificos.forEach(obj => {
       children.push(new Paragraph({
         children: [new TextRun({ text: obj, font: "Arial" })],
-        bullet: { level: 0 },
         alignment: AlignmentType.JUSTIFIED,
         spacing: { after: 120 }
       }));
@@ -111,20 +109,25 @@ export const generateDocx = async (content, type, report) => {
 
     // Capítulo II
     children.push(createHeading('Capítulo II: Características Generales del Objeto Evaluado', HeadingLevel.HEADING_2));
-    children.push(createParagraph('2.1. Creación: ' + content.capitulo2.creacion));
-    children.push(createParagraph('2.4. Organización (Organigrama): ' + content.capitulo2.organigrama));
-    children.push(createParagraph('2.5. Base Legal y Técnica: ' + content.capitulo2.baseLegal));
+    children.push(createHeading('2.1. Creación', HeadingLevel.HEADING_3));
+    children.push(createParagraph(content.capitulo2.creacion));
+
+    children.push(createHeading('2.2. Base Legal y Técnica', HeadingLevel.HEADING_3));
+    children.push(createParagraph(content.capitulo2.baseLegal));
 
     // Capítulo III
     children.push(createHeading('Capítulo III: Observaciones Derivadas del Análisis', HeadingLevel.HEADING_2));
-    content.capitulo3.forEach((hallazgo, idx) => {
-      children.push(createParagraph(`Observación Nro ${idx + 1}: ${hallazgo.titulo}`, { bold: true }));
-      children.push(createParagraph(`Condición: ${hallazgo.condicion}`, { italics: true }));
-      children.push(createParagraph(`Criterio: ${hallazgo.criterio}`, { italics: true }));
-      children.push(createParagraph(`Causa: ${hallazgo.causa}`, { italics: true }));
-      children.push(createParagraph(`Efecto: ${hallazgo.efecto}`, { italics: true }));
-      children.push(createParagraph(' '));
-    });
+    if (content.capitulo3.length === 0) {
+      children.push(createParagraph('No se registraron observaciones derivadas del análisis.', { italics: true }));
+    } else {
+      content.capitulo3.forEach((hallazgo, idx) => {
+        children.push(createParagraph(`3.${idx + 1}. Condición: ${hallazgo.condicion}`));
+        children.push(createParagraph(`Criterio: ${hallazgo.criterio}`));
+        children.push(createParagraph(`Causa: ${hallazgo.causa}`));
+        children.push(createParagraph(`Efecto: ${hallazgo.efecto}`));
+        children.push(createParagraph(' '));
+      });
+    }
 
     // Capítulo IV (Definitivo)
     if (type === 'definitivo') {
@@ -134,7 +137,6 @@ export const generateDocx = async (content, type, report) => {
       content.capitulo4.recomendaciones.forEach(rec => {
         children.push(new Paragraph({
           children: [new TextRun({ text: rec, font: "Arial" })],
-          bullet: { level: 0 },
           alignment: AlignmentType.JUSTIFIED,
           spacing: { after: 120 }
         }));
@@ -148,75 +150,16 @@ export const generateDocx = async (content, type, report) => {
   children.push(createParagraph(' '));
 
   if (type === 'definitivo') {
-    const isSigned = report.definitive?.status === 'firmado';
-    if (isSigned) {
-      if (report.definitive.signType === 'digital') {
-        const hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
-        const qrDataUrl = await QRCode.toDataURL(`Firma Digital: ${report.definitive.signedBy}\nHash: ${hash}`, {
-          margin: 1
-        });
-        const base64Data = qrDataUrl.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
-        const binaryString = window.atob(base64Data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
+    const name = report.definitive?.signedBy || content.pieFirma.firmanteNombre;
+    const cargo = content.pieFirma.firmanteCargo;
+    const acta = content.pieFirma.acta || 'Acta de Sesión Extraordinaria Nro. 003-2019 de fecha 15-05-2019';
+    const pub = content.pieFirma.publicacion || 'Gaceta Municipal Nro 1025 de fecha 15-05-2019';
 
-        const qrImage = new ImageRun({
-          data: bytes,
-          transformation: { width: 80, height: 80 }
-        });
-
-        const signatureTable = new Table({
-          width: { size: 100, type: WidthType.PERCENTAGE },
-          borders: {
-            top: { style: BorderStyle.SINGLE, size: 12 },
-            bottom: { style: BorderStyle.SINGLE, size: 12 },
-            left: { style: BorderStyle.SINGLE, size: 12 },
-            right: { style: BorderStyle.SINGLE, size: 12 },
-            insideVertical: { style: BorderStyle.NONE },
-            insideHorizontal: { style: BorderStyle.NONE },
-          },
-          margins: { top: 200, bottom: 200, left: 200, right: 200 },
-          rows: [
-            new TableRow({
-              children: [
-                new TableCell({
-                  children: [new Paragraph({ children: [qrImage], alignment: AlignmentType.CENTER })],
-                  width: { size: 20, type: WidthType.PERCENTAGE },
-                  verticalAlign: VerticalAlign.CENTER,
-                  borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: 'FIRMADO DIGITALMENTE POR:', bold: true, size: 22, font: "Arial" })] }),
-                    new Paragraph({ children: [new TextRun({ text: report.definitive.signedBy, bold: true, size: 28, font: "Arial" })], spacing: { before: 100, after: 100 } }),
-                    new Paragraph({ children: [new TextRun({ text: content.portada.unidadOrganizativa, size: 20, font: "Arial" })] }),
-                    new Paragraph({ children: [new TextRun({ text: `Hash de integridad: ${hash}`, size: 16, font: "Arial" })], spacing: { before: 100 } })
-                  ],
-                  width: { size: 80, type: WidthType.PERCENTAGE },
-                  verticalAlign: VerticalAlign.CENTER,
-                  margins: { left: 200 },
-                  borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } }
-                })
-              ]
-            })
-          ]
-        });
-
-        children.push(signatureTable);
-      } else {
-        children.push(createParagraph('_________________________________', { alignment: AlignmentType.CENTER }));
-        children.push(createParagraph(report.definitive.signedBy, { bold: true, alignment: AlignmentType.CENTER }));
-        children.push(createParagraph('Cargo: ' + content.pieFirma.firmanteCargo, { bold: true, alignment: AlignmentType.CENTER }));
-        children.push(createParagraph('Designado según Resolución N° XXXX-XX', { alignment: AlignmentType.CENTER, size: 20 }));
-      }
-    } else {
-      children.push(createParagraph('_________________________________', { alignment: AlignmentType.CENTER }));
-      children.push(createParagraph(content.pieFirma.firmanteNombre, { bold: true, alignment: AlignmentType.CENTER }));
-      children.push(createParagraph('Cargo: ' + content.pieFirma.firmanteCargo, { bold: true, alignment: AlignmentType.CENTER }));
-      children.push(createParagraph('Designado según Resolución N° XXXX-XX', { alignment: AlignmentType.CENTER, size: 20 }));
-    }
+    children.push(createParagraph('_________________________________', { alignment: AlignmentType.CENTER }));
+    children.push(createParagraph(name, { bold: true, alignment: AlignmentType.CENTER }));
+    children.push(createParagraph('Cargo: ' + cargo, { bold: true, alignment: AlignmentType.CENTER }));
+    if (acta) children.push(createParagraph(acta, { alignment: AlignmentType.CENTER, size: 20 }));
+    if (pub) children.push(createParagraph(pub, { alignment: AlignmentType.CENTER, size: 20 }));
   }
 
   // --- CONSTRUIR CABECERA REPETITIVA ---

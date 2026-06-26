@@ -24,7 +24,15 @@ export const findingService = {
       const querySnapshot = await getDocs(collection(db, 'findings'));
       const list = [];
       querySnapshot.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
+        const d = doc.data();
+        list.push({ 
+          id: doc.id, 
+          ...d,
+          condition: d.condition || d.ccce?.condition || '',
+          criterion: d.criterion || d.ccce?.criterion || '',
+          cause: d.cause || d.ccce?.cause || '',
+          effect: d.effect || d.ccce?.effect || ''
+        });
       });
       return list;
     } catch (error) {
@@ -65,6 +73,10 @@ export const findingService = {
         title: findingData.title || `Desviación Control A.${findingData.controlId}`,
         status: 'Abierto',
         severity: findingData.severity || 'Medio',
+        condition: findingData.condition || '',
+        criterion: findingData.criterion || '',
+        cause: findingData.cause || '',
+        effect: findingData.effect || '',
         ccce: {
           condition: findingData.condition || '',
           criterion: findingData.criterion || '',

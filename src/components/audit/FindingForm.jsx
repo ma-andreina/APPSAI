@@ -129,14 +129,14 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
 
       {/* Efecto */}
       <div style={fieldStyle}>
-        <label style={labelStyle}>4. Efecto (Riesgo)</label>
+        <label style={labelStyle}>4. Efecto (Consecuencias)</label>
         <textarea 
           name="effect"
           value={formData.effect}
           onChange={handleChange}
           required
           style={inputStyle} 
-          placeholder="¿Cuál es el riesgo o impacto para la organización y sus activos de información?" 
+          placeholder="¿Cuáles son las consecuencias o impacto para la organización y sus activos de información?" 
         />
       </div>
 

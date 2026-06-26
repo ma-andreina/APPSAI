@@ -85,9 +85,27 @@ export const PACWizardModal = ({ isOpen, onClose, auditId }) => {
     }
   };
 
+  const handleSaveElaborator = async (elaboratorData) => {
+    const updatedPac = {
+      ...pac,
+      signatures: {
+        ...pac.signatures,
+        elaborated: {
+          status: (elaboratorData.name && elaboratorData.cedula && elaboratorData.role) ? 'firmado' : 'pendiente',
+          ...elaboratorData
+        }
+      }
+    };
+    setPac(updatedPac);
+    await pacService.saveDraft(updatedPac);
+  };
+
   const isFormComplete = () => {
-    // Verifica que todas las recomendaciones tengan una acción registrada (básico)
-    return recommendations.every(r => pac.actions.some(a => a.recommendationId === r.id));
+    if (!pac || !recommendations || recommendations.length === 0) return false;
+    const allActions = recommendations.every(r => pac.actions.some(a => a.recommendationId === r.id && a.correctiveAction?.trim() !== ''));
+    const elab = pac.signatures?.elaborated;
+    const hasElab = Boolean(elab?.name?.trim() && elab?.cedula?.trim() && elab?.role?.trim());
+    return allActions && hasElab;
   };
 
   if (!isOpen) return null;
@@ -117,7 +135,9 @@ export const PACWizardModal = ({ isOpen, onClose, auditId }) => {
                 <PACStep2Grid 
                   recommendations={recommendations} 
                   actions={pac.actions} 
+                  elaborator={pac.signatures?.elaborated}
                   onSaveAction={handleSaveAction} 
+                  onSaveElaborator={handleSaveElaborator}
                 />
               )}
               {currentStep === 3 && (

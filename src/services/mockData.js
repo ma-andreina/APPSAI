@@ -17,7 +17,23 @@ export const mockAudits = [
     endDate: '2026-05-30',
     team: ['4', '5'],
     priority: 'Alta',
-    tasks: { total: 24, completed: 11 }
+    tasks: { total: 24, completed: 11 },
+    planning: {
+      origen: 'En cumplimiento del Plan Operativo Anual (POA) 2026, y de conformidad con lo establecido en el artículo 46 de la Ley Orgánica de la Contraloría General de la República y del Sistema Nacional de Control Fiscal.',
+      alcance: 'La evaluación comprende el período del 2026-04-15 al 2026-05-30, circunscrita a los servidores de base de datos principales de la Alcaldía del Municipio Pedraza.',
+      objetivos: {
+        general: 'Evaluar los controles de seguridad de la información y gestión de acceso en las bases de datos institucionales de la Alcaldía de Pedraza.',
+        especificos: [
+          '1. Verificar la autenticación y segregación de roles en los motores de base de datos.',
+          '2. Evaluar las políticas de respaldo (backups) y planes de recuperación ante desastres.',
+          '3. Comprobar la existencia de registros de auditoría (logs) activos y protegidos.'
+        ]
+      },
+      enfoque: 'Cumplimiento normativo e inspección técnica basada en el estándar ISO/IEC 27001:2022 y buenas prácticas de ciberseguridad municipal.',
+      metodos: 'Inspección in-situ de servidores, revisión de configuraciones lógicas, entrevistas con administradores de TI y aplicación de cuestionarios de control interno.',
+      creacion: 'Creada según Gaceta Municipal Extraordinaria N° 045-2005 de fecha 12 de enero de 2005, como ente descentralizado de carácter público.',
+      baseLegal: 'Constitución de la República Bolivariana de Venezuela, Ley Orgánica del Poder Público Municipal, Ley Orgánica de la Contraloría General de la República y del Sistema Nacional de Control Fiscal, y Norma Técnico-Legal de Ciberseguridad.'
+    }
   },
   {
     id: 'AUD-2026-002',
@@ -839,8 +855,8 @@ export const mockReports = [
     auditTitle: 'Evaluación de Seguridad BD',
     entity: 'Alcaldía de Pedraza',
     preliminary: { status: 'generado', date: '2026-05-15' },
-    definitive: { status: 'firmado', date: '2026-05-20', signedBy: 'Carlos Mendoza', signType: 'digital' },
-    executive: { status: 'generado', date: '2026-05-20' },
+    definitive: { status: 'pendiente', date: null },
+    executive: { status: 'pendiente', date: null },
     createdAt: '2026-05-15'
   },
   {
@@ -871,9 +887,9 @@ export const mockPACs = [
       }
     ],
     signatures: {
-      elaborated: { status: 'firmado', name: 'Lic. José Ramírez', role: 'Director de Finanzas' },
-      approved: { status: 'firmado', name: 'Econ. Pedro Gómez', role: 'Alcalde (E)' },
-      conformed: { status: 'pendiente', name: null, role: 'Coordinador de Auditoría' }
+      elaborated: { status: 'pendiente', name: '', cedula: '', role: '' },
+      approved: { status: 'firmado', name: 'María Gonzalez', role: 'Coordinador de Auditoría' },
+      conformed: { status: 'pendiente', name: null, role: 'Contralor Municipal' }
     },
     createdAt: '2026-05-21'
   }

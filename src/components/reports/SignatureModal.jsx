@@ -39,7 +39,7 @@ export const SignatureModal = ({ isOpen, onClose, onSign }) => {
 
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            PIN de Firma Electrónica
+            PIN de Autorización de Firma
           </label>
           <input 
             type="password" 

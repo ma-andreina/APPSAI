@@ -27,6 +27,7 @@ export const AuditPlanning = () => {
       objetivosEspecificos: '',
       enfoque: '',
       metodosProcedimientosTecnicas: '',
+      creacion: '',
       caracteristicasInstitucion: '',
       baseLegalTecnica: '',
       tipo: 'Seguridad de la Información',
@@ -56,7 +57,7 @@ export const AuditPlanning = () => {
         'codigo', 'institucion', 'alcanceDesde', 'alcanceHasta', 
         'objetivo', 'origenActuacion', 'objetivosEspecificos', 
         'enfoque', 'metodosProcedimientosTecnicas', 
-        'caracteristicasInstitucion', 'baseLegalTecnica', 
+        'creacion', 'baseLegalTecnica', 
         'oficioNro', 'destinatarioNombre', 'destinatarioCargo', 'destinatarioDireccion'
       ];
       requiredFields.forEach(field => {
@@ -88,15 +89,32 @@ export const AuditPlanning = () => {
 
   const handleFinalize = async () => {
     // Generar la auditoría en la BD simulada
+    const auditId = wizardData.general.codigo || 'AUD-2026-001';
     const newAudit = {
+      id: auditId,
       title: 'Auditoría a ' + wizardData.general.institucion,
+      organism: wizardData.general.institucion,
       entity: wizardData.general.institucion,
-      codigo: wizardData.general.codigo || `AUD-${Date.now()}`,
+      codigo: auditId,
+      startDate: wizardData.general.alcanceDesde,
+      endDate: wizardData.general.alcanceHasta,
       progress: 0,
       tasksTotal: 93,
       tasksCompleted: 0,
       status: 'open',
-      team: wizardData.team.map(m => m.nombre)
+      team: wizardData.team.map(m => m.nombre),
+      planning: {
+        origen: wizardData.general.origenActuacion,
+        alcance: `La evaluación comprende el período del ${wizardData.general.alcanceDesde || 'N/D'} al ${wizardData.general.alcanceHasta || 'N/D'}.`,
+        objetivos: {
+          general: wizardData.general.objetivo,
+          especificos: wizardData.general.objetivosEspecificos ? wizardData.general.objetivosEspecificos.split('\n').filter(Boolean) : []
+        },
+        enfoque: wizardData.general.enfoque,
+        metodos: wizardData.general.metodosProcedimientosTecnicas,
+        creacion: wizardData.general.creacion,
+        baseLegal: wizardData.general.baseLegalTecnica
+      }
     };
 
     await auditService.create(newAudit);
@@ -106,7 +124,7 @@ export const AuditPlanning = () => {
     setIsWizardActive(false);
     setCurrentStep(1);
     setWizardData({
-      general: { codigo: '', institucion: '', alcanceDesde: '', alcanceHasta: '', objetivo: '', origenActuacion: '', objetivosEspecificos: '', enfoque: '', metodosProcedimientosTecnicas: '', caracteristicasInstitucion: '', baseLegalTecnica: '', tipo: 'Seguridad de la Información', destinatarioNombre: '', destinatarioCargo: '', destinatarioDireccion: '', oficioNro: '' },
+      general: { codigo: '', institucion: '', alcanceDesde: '', alcanceHasta: '', objetivo: '', origenActuacion: '', objetivosEspecificos: '', enfoque: '', metodosProcedimientosTecnicas: '', creacion: '', caracteristicasInstitucion: '', baseLegalTecnica: '', tipo: 'Seguridad de la Información', destinatarioNombre: '', destinatarioCargo: '', destinatarioDireccion: '', oficioNro: '' },
       team: [],
       cronograma: { inicio: '', fin: '' },
       riesgos: []
@@ -120,7 +138,7 @@ export const AuditPlanning = () => {
         <FileText size={64} color="var(--brand-accent)" style={{ marginBottom: '1.5rem', opacity: 0.8, flexShrink: 0 }} />
         <h1 style={{ marginBottom: '1rem', fontSize: 'var(--font-size-h1)', whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '100%' }}>Planificación de Auditorías</h1>
         <p className="planning-desc" style={{ color: 'var(--text-secondary)', maxWidth: '500px', marginBottom: '2rem', lineHeight: '1.6', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-          Desde este módulo podrás iniciar nuevas actuaciones fiscales, conformar las comisiones de trabajo y generar los oficios de presentación con firma electrónica.
+          Desde este módulo podrás iniciar nuevas actuaciones fiscales, conformar las comisiones de trabajo y generar los oficios de presentación estructurados.
         </p>
         <Button className="planning-btn" variant="primary" onClick={() => setIsWizardActive(true)} style={{ padding: '1rem 2rem', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Plus size={20} style={{ marginRight: '8px', flexShrink: 0 }} />

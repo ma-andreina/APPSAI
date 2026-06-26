@@ -33,7 +33,8 @@ export const PACStep3Signatures = ({ pac, isFormComplete, onSign, onPreview }) =
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--status-success)' }}>
               <CheckCircle size={16} /> <span style={{ fontWeight: 'bold' }}>Validado</span>
             </div>
-            <div style={{ fontWeight: 'bold' }}>{data.name}</div>
+            <div style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>{data.name}</div>
+            {data.cedula && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>C.I: {data.cedula}</div>}
             <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{data.role}</div>
           </div>
         ) : (
@@ -102,39 +103,29 @@ export const PACStep3Signatures = ({ pac, isFormComplete, onSign, onPreview }) =
   return (
     <div style={{ padding: '1rem' }}>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <div>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>Validación y Conformidad</h3>
-          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-            Registre las firmas físicas del Ente Auditado y aplique la aprobación/conformidad de la Contraloría.
-          </p>
+          <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--brand-primary)' }}>Validación y Conformidad</h3>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Fecha de Presentación:</label>
-            <input 
-              type="date" 
-              value={pac.presentationDate || new Date().toISOString().split('T')[0]} 
-              onChange={(e) => {
-                // Se actualizará en el pac via el modal padre en una implementación real
-                // Por ahora simulamos el cambio en el objeto directamente para el visor
-                pac.presentationDate = e.target.value; 
-              }}
-              style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-light)' }}
-            />
-          </div>
-          <Button variant="secondary" onClick={onPreview}>
-            Ver Documento Final
-          </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <label style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>Fecha de Presentación:</label>
+          <input 
+            type="date" 
+            value={pac.presentationDate || new Date().toISOString().split('T')[0]} 
+            onChange={(e) => {
+              pac.presentationDate = e.target.value; 
+            }}
+            style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-input)', border: '1px solid var(--border-light)', fontFamily: 'inherit', fontSize: '0.9rem' }}
+          />
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
         {/* Ente Auditado - Elaborado Por */}
-        {renderSignatureBlock('Elaborado Por (Ente)', pac.signatures.elaborated, 'elaborated', true)}
+        {renderSignatureBlock('Elaborado por (Institución Auditada)', pac.signatures.elaborated, 'elaborated', true)}
         
         {/* Contraloría - Aprobado Por */}
-        {renderSignatureBlock('Aprobado Por (Coordinador)', pac.signatures.approved, 'approved', false)}
+        {renderSignatureBlock('Aprobado por (Coordinador)', pac.signatures.approved, 'approved', false)}
         
         {/* Contraloría - Conformado Por */}
         {renderSignatureBlock('Conformado Por (Contralor)', pac.signatures.conformed, 'conformed', false)}

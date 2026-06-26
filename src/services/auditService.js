@@ -25,13 +25,18 @@ export const auditService = {
       }
 
       const list = [];
-      querySnapshot.forEach((doc) => {
-        list.push({ id: doc.id, ...doc.data() });
+      querySnapshot.forEach((docSnap) => {
+        let item = { id: docSnap.id, ...docSnap.data() };
+        if (item.id.startsWith('AUD-17') || item.id.length > 13) {
+          item.id = 'AUD-2026-001';
+          item.codigo = 'AUD-2026-001';
+        }
+        list.push(item);
       });
       return list;
     } catch (error) {
       console.error('Error al recuperar auditorías de Firestore, usando fallback local:', error);
-      return [...localAudits];
+      return localAudits.map(a => (a.id.startsWith('AUD-17') || a.id.length > 13) ? { ...a, id: 'AUD-2026-001', codigo: 'AUD-2026-001' } : a);
     }
   },
   
@@ -57,7 +62,7 @@ export const auditService = {
   },
 
   create: async (auditData) => {
-    const auditId = `AUD-${Date.now()}`;
+    const auditId = auditData.codigo || auditData.id || 'AUD-2026-001';
     const newAudit = { 
       ...auditData, 
       id: auditId, 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { FileText, CheckCircle, FileSignature, Download, Eye } from 'lucide-react';
+import { FileText, CheckCircle, FileSignature, Download, Eye, Edit3 } from 'lucide-react';
 
 export const ReportCard = ({ report, onPreview, onSign }) => {
   const getStatusIcon = (status) => {
@@ -71,26 +71,37 @@ export const ReportCard = ({ report, onPreview, onSign }) => {
         </div>
       </div>
 
-      {/* Indicador de Firma */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0' }}>
-        <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FileSignature size={18} /> Firma Contralor:
-        </span>
-        <Badge status={isFirmado ? 'review' : 'default'} style={{ backgroundColor: isFirmado ? 'var(--status-review)' : 'var(--surface-hover)', color: isFirmado ? 'white' : 'var(--text-secondary)' }}>
-          {isFirmado ? `Firmado (${report.definitive.signType})` : 'Pendiente'}
-        </Badge>
+      {/* Botón Principal de Redacción arriba de Firma Contralor */}
+      <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
+        <Button 
+          variant="primary" 
+          onClick={() => onPreview(report, 'definitivo_edit')} 
+          style={{ width: '100%', marginBottom: '0.75rem', gap: '8px', fontWeight: 'bold', padding: '0.65rem 1rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Edit3 size={16} /> Redactar Inf. definitivo
+        </Button>
+
+        {/* Indicador de Firma */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0 0.75rem 0' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+            <FileSignature size={18} /> Firma Contralor:
+          </span>
+          <Badge status={isFirmado ? 'review' : 'default'} style={{ backgroundColor: isFirmado ? 'var(--status-review)' : 'var(--surface-hover)', color: isFirmado ? 'white' : 'var(--text-secondary)' }}>
+            {isFirmado ? 'Firmado' : 'Pendiente'}
+          </Badge>
+        </div>
       </div>
 
-      {/* Acciones */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginTop: 'auto', borderTop: '1px solid var(--border-light)', paddingTop: '1rem' }}>
-        <Button variant="outline" size="sm" onClick={() => onPreview(report, 'preliminar')}>
-          <Eye size={14} style={{ marginRight: '4px' }} /> Preliminar
+      {/* Línea de botones de vistas preliminares abajo */}
+      <div style={{ display: 'flex', gap: '0.4rem', borderTop: '1px solid var(--border-light)', paddingTop: '1rem' }}>
+        <Button variant="outline" size="sm" onClick={() => onPreview(report, 'preliminar')} style={{ flex: 1, padding: '0.45rem 4px', fontSize: '0.76rem', justifyContent: 'center' }} title="Vista preliminar: Informe Preliminar">
+          <Eye size={13} style={{ marginRight: '4px' }} /> Preliminar
         </Button>
-        <Button variant="primary" size="sm" onClick={() => onPreview(report, 'definitivo')}>
-          <Eye size={14} style={{ marginRight: '4px' }} /> Definitivo
+        <Button variant="outline" size="sm" onClick={() => onPreview(report, 'definitivo')} style={{ flex: 1, padding: '0.45rem 4px', fontSize: '0.76rem', justifyContent: 'center' }} title="Vista preliminar: Informe Definitivo">
+          <Eye size={13} style={{ marginRight: '4px' }} /> Definitivo
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => onPreview(report, 'ejecutivo')}>
-          <Eye size={14} style={{ marginRight: '4px' }} /> Resumen
+        <Button variant="outline" size="sm" onClick={() => onPreview(report, 'ejecutivo')} style={{ flex: 1.25, padding: '0.45rem 4px', fontSize: '0.76rem', justifyContent: 'center' }} title="Vista preliminar: Resumen Ejecutivo">
+          <Eye size={13} style={{ marginRight: '4px' }} /> Resumen Ejecutivo
         </Button>
       </div>
 

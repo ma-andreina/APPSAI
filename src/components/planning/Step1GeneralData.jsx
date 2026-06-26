@@ -138,8 +138,12 @@ export const Step1GeneralData = ({ data, updateData, errors = [] }) => {
         />
       </div>
 
+      <h3 style={{ margin: '2rem 0 1rem 0', fontSize: '1.1rem', color: 'var(--brand-primary)', borderBottom: '2px solid var(--brand-accent)', paddingBottom: '0.5rem' }}>
+        Capítulo I: Aspectos Preliminares
+      </h3>
+
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('origenActuacion')}>Origen de la Actuación</label>
+        <label style={getLabelStyle('origenActuacion')}>1.1. Origen de la Actuación</label>
         <textarea 
           name="origenActuacion" 
           value={data.origenActuacion || ''} 
@@ -150,30 +154,30 @@ export const Step1GeneralData = ({ data, updateData, errors = [] }) => {
       </div>
 
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('objetivo')}>Objetivo General</label>
+        <label style={getLabelStyle('objetivo')}>1.3. Objetivo General</label>
         <textarea 
           name="objetivo" 
-          value={data.objetivo} 
+          value={data.objetivo || ''} 
           onChange={handleChange} 
           placeholder="Finalidad o propósito que persigue la Contraloría para realizar la auditoría..."
-          style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }}
+          style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
           required
         />
       </div>
 
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('objetivosEspecificos')}>Objetivos Específicos</label>
+        <label style={getLabelStyle('objetivosEspecificos')}>1.3. Objetivos Específicos (Uno por línea)</label>
         <textarea 
           name="objetivosEspecificos" 
           value={data.objetivosEspecificos || ''} 
           onChange={handleChange} 
-          placeholder="Objetivos específicos de la auditoría..."
+          placeholder="1. Verificar controles físicos y organizacionales.&#10;2. Evaluar controles de red y lógicos."
           style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
         />
       </div>
 
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('enfoque')}>Enfoque</label>
+        <label style={getLabelStyle('enfoque')}>1.4. Enfoque</label>
         <textarea 
           name="enfoque" 
           value={data.enfoque || ''} 
@@ -184,7 +188,7 @@ export const Step1GeneralData = ({ data, updateData, errors = [] }) => {
       </div>
 
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('metodosProcedimientosTecnicas')}>Métodos, Procedimientos y Técnicas</label>
+        <label style={getLabelStyle('metodosProcedimientosTecnicas')}>1.5. Métodos, Procedimientos y Técnicas</label>
         <textarea 
           name="metodosProcedimientosTecnicas" 
           value={data.metodosProcedimientosTecnicas || ''} 
@@ -194,19 +198,23 @@ export const Step1GeneralData = ({ data, updateData, errors = [] }) => {
         />
       </div>
 
+      <h3 style={{ margin: '2.5rem 0 1rem 0', fontSize: '1.1rem', color: 'var(--brand-primary)', borderBottom: '2px solid var(--brand-accent)', paddingBottom: '0.5rem' }}>
+        Capítulo II: Características Generales del Objeto Evaluado
+      </h3>
+
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('caracteristicasInstitucion')}>Características de la Institución Evaluada</label>
+        <label style={getLabelStyle('creacion')}>2.1. Creación</label>
         <textarea 
-          name="caracteristicasInstitucion" 
-          value={data.caracteristicasInstitucion || ''} 
+          name="creacion" 
+          value={data.creacion || ''} 
           onChange={handleChange} 
-          placeholder="Características relevantes de la institución..."
-          style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+          placeholder="Base de creación (Ej. Gaceta Municipal Nro. X)..."
+          style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
         />
       </div>
 
       <div style={{ marginTop: '1rem' }}>
-        <label style={getLabelStyle('baseLegalTecnica')}>Base Legal y Técnica</label>
+        <label style={getLabelStyle('baseLegalTecnica')}>2.2. Base Legal y Técnica</label>
         <textarea 
           name="baseLegalTecnica" 
           value={data.baseLegalTecnica || ''} 
