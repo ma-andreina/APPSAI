@@ -44,6 +44,7 @@ export const Alerts = () => {
   const handleNavigate = (type) => {
     if (type === 'PAC') navigate('/pac');
     else if (type === 'Informe') navigate('/reports');
+    else if (type === 'Auditoria') navigate('/execution');
   };
 
   // Filtrado de columnas
