@@ -103,45 +103,42 @@ export const AuthProvider = ({ children }) => {
         try {
           await signInWithEmailAndPassword(auth, email, password);
         } catch (authErr) {
-          // Registro al vuelo (on-demand):
-          // Si el usuario existe en Firestore pero no en Auth, se registra con la contraseña de Firestore
-          if (authErr.code === 'auth/user-not-found' || authErr.code === 'auth/invalid-credential') {
-            const expectedPassword = user.tempPassword || 'Pedraza2026!';
+          // Registro al vuelo (on-demand) o inicio por sincronización de clave:
+          // Al fallar en Firebase Auth (ej: auth/invalid-login-credentials en Firebase v10+, usuario no registrado en Auth, etc.),
+          // verificamos si la clave ingresada coincide con la contraseña almacenada en Firestore (user.tempPassword o user.password o por defecto).
+          const expectedPassword = user.tempPassword || user.password || 'Pedraza2026!';
             
-            if (password === expectedPassword) {
+          if (password === expectedPassword) {
+            try {
+              // Registrar e iniciar sesión automático
+              const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+              
+              // Enviar correo de verificación
               try {
-                // Registrar e iniciar sesión automático
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                
-                // Enviar correo de verificación
-                try {
-                  await sendEmailVerification(userCredential.user);
-                } catch (verifyErr) {
-                  console.error('Error al enviar correo de verificación:', verifyErr);
-                }
-                
-                // Si existía una contraseña temporal, eliminarla del perfil en Firestore por seguridad
+                await sendEmailVerification(userCredential.user);
+              } catch (verifyErr) {
+                console.error('Error al enviar correo de verificación:', verifyErr);
+              }
+              
+              // Si existía una contraseña temporal, eliminarla del perfil en Firestore por seguridad
+              if (user.tempPassword) {
+                const userRef = doc(db, 'users', user.id);
+                await updateDoc(userRef, { tempPassword: null });
+                user.tempPassword = null;
+              }
+            } catch (createErr) {
+              if (createErr.code === 'auth/email-already-in-use') {
+                // Si ya existe en Firebase Auth pero el admin la restableció en Firestore,
+                // permitimos continuar con inicio de sesión local para el demo/pruebas.
+                console.log("Inicio de sesión local por restablecimiento de contraseña.");
                 if (user.tempPassword) {
                   const userRef = doc(db, 'users', user.id);
                   await updateDoc(userRef, { tempPassword: null });
                   user.tempPassword = null;
                 }
-              } catch (createErr) {
-                if (createErr.code === 'auth/email-already-in-use') {
-                  // Si ya existe en Firebase Auth pero el admin la restableció en Firestore,
-                  // permitimos continuar con inicio de sesión local para el demo/pruebas.
-                  console.log("Inicio de sesión local por restablecimiento de contraseña.");
-                  if (user.tempPassword) {
-                    const userRef = doc(db, 'users', user.id);
-                    await updateDoc(userRef, { tempPassword: null });
-                    user.tempPassword = null;
-                  }
-                } else {
-                  throw new Error('Error al registrar usuario en la base de seguridad');
-                }
+              } else {
+                throw new Error('Error al registrar usuario en la base de seguridad: ' + createErr.message);
               }
-            } else {
-              throw new Error('Credenciales inválidas');
             }
           } else {
             throw new Error('Credenciales inválidas');
