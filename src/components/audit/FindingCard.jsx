@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 
-export const FindingCard = ({ finding }) => {
+export const FindingCard = ({ finding, onClick }) => {
   const getSeverityStatus = (severity) => {
     switch(severity) {
       case 'Crítico': return 'critical';
@@ -17,7 +17,7 @@ export const FindingCard = ({ finding }) => {
   const conditionText = finding?.condition || finding?.ccce?.condition || 'Sin descripción de condición';
 
   return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+    <Card onClick={() => onClick && onClick(finding)} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
           {finding?.id || 'HALL-N/D'}

@@ -3,6 +3,7 @@ import { Card } from '../components/ui/Card';
 import { Tabs } from '../components/ui/Tabs';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { ChecklistAccordion } from '../components/audit/ChecklistAccordion';
+import { FindingForm } from '../components/audit/FindingForm';
 import { checklistService } from '../services/checklistService';
 import { Modal } from '../components/ui/Modal';
 import { findingService } from '../services/findingService';

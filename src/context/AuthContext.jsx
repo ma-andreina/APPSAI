@@ -149,6 +149,9 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+      // Se comenta la intercepción de 2FA según requerimiento del usuario para permitir
+      // el ingreso directo al sistema cuando el usuario y la contraseña son correctos.
+      /*
       if (user.twoFactorEnabled) {
         // Requiere 2FA — guardar usuario pendiente y cambiar paso
         setPendingUser(user);
@@ -156,6 +159,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return { requiresTwoFactor: true };
       }
+      */
 
       // Sin 2FA — autenticar directamente
       setCurrentUser(user);

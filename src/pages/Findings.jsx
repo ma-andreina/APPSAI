@@ -11,6 +11,7 @@ export const Findings = () => {
   const [findings, setFindings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFinding, setSelectedFinding] = useState(null);
   const { addNotification } = useAppContext();
 
   useEffect(() => {
@@ -24,11 +25,25 @@ export const Findings = () => {
     });
   };
 
-  const handleCreateFinding = async (formData) => {
+  const handleSaveFinding = async (formData) => {
     setIsModalOpen(false);
-    // Para simplificar la demo, inyectamos auditId dummy
-    await findingService.create({ ...formData, auditId: 'AUD-SEC-2026', criterion: `Control ISO 27001: ${formData.criterion}` });
-    addNotification('Hallazgo registrado exitosamente', 'success');
+    const criterionValue = formData.criterion?.startsWith('Control') || formData.criterion?.startsWith('control')
+      ? formData.criterion 
+      : `Control ISO 27001: ${formData.criterion || ''}`;
+
+    const payload = {
+      ...formData,
+      criterion: criterionValue,
+      auditId: formData.auditId || 'AUD-SEC-2026'
+    };
+
+    if (selectedFinding && selectedFinding.id) {
+      await findingService.update(selectedFinding.id, payload);
+      addNotification('Hallazgo actualizado exitosamente', 'success');
+    } else {
+      await findingService.create(payload);
+      addNotification('Hallazgo registrado exitosamente', 'success');
+    }
     loadFindings();
   };
 
@@ -47,7 +62,7 @@ export const Findings = () => {
             Documentación estructurada de desviaciones (CCCE) para la determinación de responsabilidades.
           </p>
         </div>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)} style={{ gap: '8px' }}>
+        <Button variant="primary" onClick={() => { setSelectedFinding(null); setIsModalOpen(true); }} style={{ gap: '8px' }}>
           <Plus size={18} />
           Nuevo Hallazgo
         </Button>
@@ -66,19 +81,27 @@ export const Findings = () => {
           alignItems: 'start'
         }}>
           {findings.map(finding => (
-            <FindingCard key={finding.id} finding={finding} />
+            <FindingCard 
+              key={finding.id} 
+              finding={finding} 
+              onClick={(item) => {
+                setSelectedFinding(item);
+                setIsModalOpen(true);
+              }}
+            />
           ))}
         </div>
       )}
 
-      {/* Modal de Creación */}
+      {/* Modal de Creación / Edición */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Registrar Hallazgo (Metodología CCCE)"
+        title={selectedFinding ? `Editar Hallazgo (${selectedFinding.id})` : "Registrar Hallazgo (Metodología CCCE)"}
       >
         <FindingForm 
-          onSubmit={handleCreateFinding} 
+          initialData={selectedFinding || {}}
+          onSubmit={handleSaveFinding} 
           onCancel={() => setIsModalOpen(false)} 
         />
       </Modal>

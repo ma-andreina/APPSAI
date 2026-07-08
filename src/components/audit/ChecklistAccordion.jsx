@@ -29,7 +29,8 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
     switch (status) {
       case 'Cumple': return 'var(--status-closed)';
       case 'No cumple': return 'var(--status-critical)';
-      case 'N/A': return 'var(--text-secondary)';
+      case 'N/A':
+      case 'No aplica': return 'var(--text-secondary)';
       default: return 'var(--text-secondary)';
     }
   };
@@ -111,7 +112,7 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
                         if (statusOption === 'No cumple' && onTriggerFinding) {
                           onTriggerFinding({ ...control, observations: localObservations });
                         }
-                        if (statusOption === 'Cumple' || statusOption === 'N/A') {
+                        if (statusOption === 'Cumple' || statusOption === 'N/A' || statusOption === 'No aplica') {
                           setIsOpen(false);
                         }
                       }
@@ -120,14 +121,14 @@ export const ChecklistAccordion = ({ control, onUpdate, onTriggerFinding, autoSa
                       padding: '8px 16px',
                       borderRadius: 'var(--radius-full)',
                       border: `1px solid ${localStatus === statusOption ? getStatusColor(statusOption) : 'var(--border-light)'}`,
-                      backgroundColor: localStatus === statusOption ? `${getStatusColor(statusOption)}1A` : 'transparent',
+                      backgroundColor: localStatus === statusOption ? 'var(--surface-hover)' : 'transparent',
                       color: localStatus === statusOption ? getStatusColor(statusOption) : 'var(--text-primary)',
                       fontWeight: localStatus === statusOption ? '600' : '400',
                       cursor: 'pointer',
                       transition: 'all 0.2s'
                     }}
                   >
-                    {statusOption}
+                    {statusOption === 'N/A' ? 'N/A (No aplica)' : statusOption}
                   </button>
                 ))}
               </div>

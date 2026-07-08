@@ -15,9 +15,16 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [files, setFiles] = useState([]);
   const fileInputRef = React.useRef(null);
 
-  // Si initialData cambia (ej: se abre modal con otro control), actualizamos el form
+  // Si initialData cambia (ej: se abre modal para editar o para crear nuevo), actualizamos el form
   React.useEffect(() => {
-    setFormData(prev => ({ ...prev, ...initialData }));
+    setFormData({
+      condition: '',
+      criterion: '',
+      cause: '',
+      effect: '',
+      severity: 'Medio',
+      ...initialData
+    });
   }, [initialData]);
 
   const handleChange = (e) => {
@@ -217,7 +224,7 @@ export const FindingForm = ({ onSubmit, onCancel, initialData = {} }) => {
         gap: '1rem' 
       }}>
         <Button variant="outline" type="button" onClick={onCancel}>Cancelar</Button>
-        <Button variant="primary" type="submit">Guardar Hallazgo</Button>
+        <Button variant="primary" type="submit">{initialData?.id ? 'Actualizar Hallazgo' : 'Guardar Hallazgo'}</Button>
       </div>
 
     </form>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { userService } from '../services/userService';
+// import { userService } from '../services/userService'; // Comentado para ocultar acceso rápido Demo
 import { Button } from '../components/ui/Button';
 import { Shield, Lock, Mail, KeyRound, ChevronDown, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
@@ -10,7 +10,7 @@ import { Shield, Lock, Mail, KeyRound, ChevronDown, ArrowLeft, Eye, EyeOff } fro
  * Incluye selector rápido de usuario para demo.
  */
 export const Login = () => {
-  const { login, verify2FA, cancel2FA, quickLogin, resetPassword, authStep, loading, error, setError, pendingUser } = useAuth();
+  const { login, verify2FA, cancel2FA, resetPassword, authStep, loading, error, setError, pendingUser } = useAuth();
 
   // Form state
   const [email, setEmail] = useState('');
@@ -22,9 +22,9 @@ export const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
-  // Quick login
-  const [showQuickLogin, setShowQuickLogin] = useState(false);
-  const [demoUsers, setDemoUsers] = useState([]);
+  // Quick login (Comentado para ocultar botón de acceso rápido Demo según requerimiento)
+  // const [showQuickLogin, setShowQuickLogin] = useState(false);
+  // const [demoUsers, setDemoUsers] = useState([]);
 
   // Animation
   const [isVisible, setIsVisible] = useState(false);
@@ -33,10 +33,10 @@ export const Login = () => {
     // Fade-in animation
     const timer = setTimeout(() => setIsVisible(true), 100);
 
-    // Cargar usuarios para el selector rápido
-    userService.getAll().then((users) => {
-      setDemoUsers(users.filter((u) => u.status === 'Activo'));
-    });
+    // Cargar usuarios para el selector rápido (Comentado para ocultar acceso rápido Demo)
+    // userService.getAll().then((users) => {
+    //   setDemoUsers(users.filter((u) => u.status === 'Activo'));
+    // });
 
     return () => clearTimeout(timer);
   }, []);
@@ -61,9 +61,9 @@ export const Login = () => {
     }
   };
 
-  const handleQuickLogin = (userId) => {
-    quickLogin(userId);
-  };
+  // const handleQuickLogin = (userId) => {
+  //   quickLogin(userId);
+  // };
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
@@ -588,7 +588,7 @@ export const Login = () => {
           )}
         </div>
 
-        {/* Quick Login (Demo) */}
+        {/* Quick Login (Demo) - Ocultado según requerimiento del usuario
         <div style={{ marginTop: '1.5rem' }}>
           <button
             onClick={() => setShowQuickLogin(!showQuickLogin)}
@@ -681,6 +681,7 @@ export const Login = () => {
             </div>
           )}
         </div>
+        */}
 
         {/* Footer */}
         <div style={{

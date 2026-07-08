@@ -1,5 +1,5 @@
 import { db } from './firebaseConfig';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { mockFindings } from './mockData';
 
 // Determinar si Firebase está configurado para pruebas reales
@@ -96,6 +96,65 @@ export const findingService = {
       };
     } catch (error) {
       console.error('Error al crear hallazgo en Firestore:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza un hallazgo existente en Firestore y en caché local.
+   * @param {string} id ID del hallazgo.
+   * @param {object} findingData Datos a actualizar.
+   * @returns {Promise<object>} El hallazgo actualizado.
+   */
+  update: async (id, findingData) => {
+    if (!isFirebaseConfigured) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const index = currentFindings.findIndex((f) => f.id === id);
+          if (index !== -1) {
+            currentFindings[index] = {
+              ...currentFindings[index],
+              ...findingData,
+              condition: findingData.condition || findingData.ccce?.condition || currentFindings[index].condition,
+              criterion: findingData.criterion || findingData.ccce?.criterion || currentFindings[index].criterion,
+              cause: findingData.cause || findingData.ccce?.cause || currentFindings[index].cause,
+              effect: findingData.effect || findingData.ccce?.effect || currentFindings[index].effect,
+              ccce: {
+                condition: findingData.condition || '',
+                criterion: findingData.criterion || '',
+                cause: findingData.cause || '',
+                effect: findingData.effect || ''
+              },
+              updatedAt: new Date().toISOString()
+            };
+            resolve(currentFindings[index]);
+          } else {
+            resolve(null);
+          }
+        }, 250);
+      });
+    }
+
+    try {
+      const docRef = doc(db, 'findings', id);
+      const updatedData = {
+        ...findingData,
+        condition: findingData.condition || '',
+        criterion: findingData.criterion || '',
+        cause: findingData.cause || '',
+        effect: findingData.effect || '',
+        ccce: {
+          condition: findingData.condition || '',
+          criterion: findingData.criterion || '',
+          cause: findingData.cause || '',
+          effect: findingData.effect || ''
+        },
+        updatedAt: new Date().toISOString()
+      };
+      await updateDoc(docRef, updatedData);
+      return { id, ...updatedData };
+    } catch (error) {
+      console.error('Error al actualizar hallazgo en Firestore:', error);
       throw error;
     }
   }
