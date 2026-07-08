@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-// import { userService } from '../services/userService'; // Comentado para ocultar acceso rápido Demo
 import { Button } from '../components/ui/Button';
-import { Shield, Lock, Mail, KeyRound, ChevronDown, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Shield, Lock, Mail, KeyRound, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 /**
  * Pantalla de Login del SAI.
@@ -22,21 +21,12 @@ export const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
-  // Quick login (Comentado para ocultar botón de acceso rápido Demo según requerimiento)
-  // const [showQuickLogin, setShowQuickLogin] = useState(false);
-  // const [demoUsers, setDemoUsers] = useState([]);
-
   // Animation
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Fade-in animation
     const timer = setTimeout(() => setIsVisible(true), 100);
-
-    // Cargar usuarios para el selector rápido (Comentado para ocultar acceso rápido Demo)
-    // userService.getAll().then((users) => {
-    //   setDemoUsers(users.filter((u) => u.status === 'Activo'));
-    // });
 
     return () => clearTimeout(timer);
   }, []);
@@ -61,9 +51,7 @@ export const Login = () => {
     }
   };
 
-  // const handleQuickLogin = (userId) => {
-  //   quickLogin(userId);
-  // };
+
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
@@ -587,101 +575,6 @@ export const Login = () => {
             </form>
           )}
         </div>
-
-        {/* Quick Login (Demo) - Ocultado según requerimiento del usuario
-        <div style={{ marginTop: '1.5rem' }}>
-          <button
-            onClick={() => setShowQuickLogin(!showQuickLogin)}
-            style={{
-              width: '100%',
-              padding: '0.65rem',
-              borderRadius: '10px',
-              border: '1px dashed rgba(255,255,255,0.15)',
-              backgroundColor: 'transparent',
-              color: 'rgba(255,255,255,0.4)',
-              fontSize: '0.8rem',
-              fontFamily: 'inherit',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-              e.currentTarget.style.color = 'rgba(255,255,255,0.4)';
-            }}
-          >
-            <ChevronDown size={14} style={{ transform: showQuickLogin ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
-            Acceso rápido (Demo)
-          </button>
-
-          {showQuickLogin && (
-            <div style={{
-              marginTop: '0.75rem',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.5rem',
-              animation: 'fadeIn 0.3s ease'
-            }}>
-              {demoUsers.map((user) => (
-                <button
-                  key={user.id}
-                  onClick={() => handleQuickLogin(user.id)}
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 1rem',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    backgroundColor: 'rgba(255,255,255,0.04)',
-                    color: 'rgba(255,255,255,0.7)',
-                    fontSize: '0.85rem',
-                    fontFamily: 'inherit',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    transition: 'all 0.2s',
-                    textAlign: 'left'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(74,144,217,0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(74,144,217,0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                  }}
-                >
-                  <div style={{
-                    width: '32px', height: '32px', borderRadius: '50%',
-                    backgroundColor: 'rgba(74,144,217,0.2)',
-                    color: '#93C5FD',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, fontSize: '0.7rem', flexShrink: 0
-                  }}>
-                    {user.avatar}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{user.name}</div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {user.role}
-                    </div>
-                  </div>
-                  {user.twoFactorEnabled && (
-                    <Shield size={14} color="rgba(74,144,217,0.5)" title="2FA activo" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        */}
 
         {/* Footer */}
         <div style={{
